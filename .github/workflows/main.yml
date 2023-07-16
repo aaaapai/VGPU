@@ -6,7 +6,7 @@ jobs:
 
   build-android:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
 
@@ -28,6 +28,8 @@ jobs:
 
         with:
 
-          name: vgpu
+          name: vgpu-libs-${{matrix.arch}}
 
-          path: libvgpu.so
+          path: |
+
+            vgpu/out/Android-${{matrix.arch}}/libvgpu.so
