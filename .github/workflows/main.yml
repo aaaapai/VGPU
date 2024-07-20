@@ -7,7 +7,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build VGPU
         run: |
-         sh 1.sh
          #wget https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
          #unzip android-ndk-r25c-linux.zip >> /dev/null
          $ANDROID_NDK_LATEST_HOME/ndk-build APP_PLATFORM=android-29 APP_BUILD_SCRIPT=./Android.mk NDK_PROJECT_PATH=.
