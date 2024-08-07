@@ -50,7 +50,7 @@ include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE:=OGLCompiler
-LOCAL_CXXFLAGS:=-std=c++11 -fno-exceptions -fno-rtti $(GLSLANG_DEFINES)
+LOCAL_CXXFLAGS:=-std=c++11 -fexceptions -frtti $(GLSLANG_DEFINES)
 LOCAL_EXPORT_C_INCLUDES:=$(LOCAL_PATH)
 LOCAL_SRC_FILES:=OGLCompilersDLL/InitializeDll.cpp
 LOCAL_C_INCLUDES:=$(LOCAL_PATH)/OGLCompiler
@@ -62,7 +62,7 @@ include $(BUILD_STATIC_LIBRARY)
 # instead.
 include $(CLEAR_VARS)
 LOCAL_MODULE:=HLSL
-LOCAL_CXXFLAGS:=-std=c++11 -fno-exceptions -fno-rtti $(GLSLANG_DEFINES)
+LOCAL_CXXFLAGS:=-std=c++11 -fexceptions -frtti -D_GLIBCXX_USE_CXX11_ABI=1 $(GLSLANG_DEFINES)
 LOCAL_SRC_FILES:= \
     hlsl/hlslAttributes.cpp \
     hlsl/hlslParseHelper.cpp \
@@ -84,11 +84,11 @@ $(LOCAL_PATH)/glslang/MachineIndependent/ShaderLang.cpp: \
 	$(GLSLANG_BUILD_INFO_H)
 
 LOCAL_MODULE:=glslang
-LOCAL_CXXFLAGS:=-std=c++11 -fno-exceptions -fno-rtti $(GLSLANG_DEFINES)
+LOCAL_CXXFLAGS:=-std=c++11 -fexceptions -frtti -D_GLIBCXX_USE_CXX11_ABI=1 $(GLSLANG_DEFINES)
 LOCAL_EXPORT_C_INCLUDES:=$(LOCAL_PATH)
 LOCAL_SRC_FILES:= \
         glslang/MachineIndependent/glslang_tab.cpp \
-		glslang/MachineIndependent/glslang.y \
+	glslang/MachineIndependent/glslang.y \
         glslang/MachineIndependent/attribute.cpp \
         glslang/MachineIndependent/Constant.cpp \
         glslang/MachineIndependent/iomapper.cpp \
@@ -126,27 +126,3 @@ LOCAL_STATIC_LIBRARIES:=OSDependent OGLCompiler HLSL
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-
-# GlslangToSpv.cpp depends on the generated build_info.h
-$(LOCAL_PATH)/SPIRV/GlslangToSpv.cpp: \
-	$(GLSLANG_BUILD_INFO_H)
-
-LOCAL_MODULE:=SPIRV
-LOCAL_CXXFLAGS:=-std=c++11 -fno-exceptions -fno-rtti $(GLSLANG_DEFINES)
-LOCAL_SRC_FILES:= \
-	SPIRV/GlslangToSpv.cpp \
-	SPIRV/InReadableOrder.cpp \
-	SPIRV/Logger.cpp \
-	SPIRV/SPVRemapper.cpp \
-	SPIRV/SpvBuilder.cpp \
-#	SPIRV/SpvPostProcess.cpp \
-#	SPIRV/SpvTools.cpp \
-	SPIRV/disassemble.cpp \
-	SPIRV/doc.cpp
-	
-LOCAL_C_INCLUDES:=$(LOCAL_PATH) \
-	$(LOCAL_PATH)/SPIRV \
-	$(GLSLANG_GENERATED_INCLUDEDIR)
-LOCAL_EXPORT_C_INCLUDES:=$(LOCAL_PATH)/SPIRV
-LOCAL_STATIC_LIBRARIES:=glslang
-include $(BUILD_STATIC_LIBRARY)
