@@ -126,3 +126,27 @@ LOCAL_STATIC_LIBRARIES:=OSDependent OGLCompiler HLSL
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
+
+# GlslangToSpv.cpp depends on the generated build_info.h
+$(LOCAL_PATH)/SPIRV/GlslangToSpv.cpp: \
+	$(GLSLANG_BUILD_INFO_H)
+
+LOCAL_MODULE:=SPIRV
+LOCAL_CXXFLAGS:=-std=c++11 -fexceptions -frtti -D_GLIBCXX_USE_CXX11_ABI=1 $(GLSLANG_DEFINES)
+LOCAL_SRC_FILES:= \
+	SPIRV/GlslangToSpv.cpp \
+	SPIRV/InReadableOrder.cpp \
+	SPIRV/Logger.cpp \
+	SPIRV/SPVRemapper.cpp \
+	SPIRV/SpvBuilder.cpp \
+#	SPIRV/SpvPostProcess.cpp \
+#	SPIRV/SpvTools.cpp \
+	SPIRV/disassemble.cpp \
+	SPIRV/doc.cpp
+
+LOCAL_C_INCLUDES:=$(LOCAL_PATH) \
+	$(LOCAL_PATH)/SPIRV \
+	$(GLSLANG_GENERATED_INCLUDEDIR)
+LOCAL_EXPORT_C_INCLUDES:=$(LOCAL_PATH)/SPIRV
+LOCAL_STATIC_LIBRARIES:=glslang
+include $(BUILD_STATIC_LIBRARY)
