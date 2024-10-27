@@ -78,13 +78,6 @@ LOCAL_SRC_FILES:= \
 		glslang/CInterface/glslang_c_interface.cpp \
 		glslang/GenericCodeGen/CodeGen.cpp \
 		glslang/GenericCodeGen/Link.cpp \
-		glslang/HLSL/hlslAttributes.cpp \
-		glslang/HLSL/hlslGrammar.cpp \
-		glslang/HLSL/hlslOpMap.cpp \
-		glslang/HLSL/hlslParseables.cpp \
-		glslang/HLSL/hlslParseHelper.cpp \
-		glslang/HLSL/hlslScanContext.cpp \
-		glslang/HLSL/hlslTokenStream.cpp \
 		glslang/MachineIndependent/attribute.cpp \
 		glslang/MachineIndependent/Constant.cpp \
 		glslang/MachineIndependent/glslang_tab.cpp \
