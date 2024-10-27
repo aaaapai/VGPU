@@ -1,7 +1,6 @@
-#ifndef _PCH_H
-#define _PCH_H
 //
-// Copyright (C) 2018 The Khronos Group Inc.
+// Copyright (C) 2016 Google, Inc.
+//
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -16,7 +15,7 @@
 //    disclaimer in the documentation and/or other materials provided
 //    with the distribution.
 //
-//    Neither the name of 3Dlabs Inc. Ltd. nor the names of its
+//    Neither the name of Google, Inc., nor the names of its
 //    contributors may be used to endorse or promote products derived
 //    from this software without specific prior written permission.
 //
@@ -34,18 +33,37 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "hlslAttributes.h"
-#include "hlslGrammar.h"
-#include "hlslParseHelper.h"
+#ifndef HLSLOPMAP_H_
+#define HLSLOPMAP_H_
+
 #include "hlslScanContext.h"
 
-#include "../MachineIndependent/Scan.h"
-#include "../MachineIndependent/preprocessor/PpContext.h"
+namespace glslang {
 
-#include <algorithm>
-#include <array>
-#include <cctype>
-#include <functional>
-#include <set>
+    enum PrecedenceLevel {
+        PlBad,
+        PlLogicalOr,
+        PlLogicalXor,
+        PlLogicalAnd,
+        PlBitwiseOr,
+        PlBitwiseXor,
+        PlBitwiseAnd,
+        PlEquality,
+        PlRelational,
+        PlShift,
+        PlAdd,
+        PlMul
+    };
 
-#endif /* _PCH_H */
+    class HlslOpMap {
+    public:
+        static TOperator assignment(EHlslTokenClass op);
+        static TOperator binary(EHlslTokenClass op);
+        static TOperator preUnary(EHlslTokenClass op);
+        static TOperator postUnary(EHlslTokenClass op);
+        static PrecedenceLevel precedenceLevel(TOperator);
+    };
+
+} // end namespace glslang
+
+#endif // HLSLOPMAP_H_
