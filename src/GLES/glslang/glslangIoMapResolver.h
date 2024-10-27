@@ -52,16 +52,16 @@ public:
     GlslangIoMapResolver() {}
     ~GlslangIoMapResolver() {}
 
-    bool                            validateBinding(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
-    int                             resolveBinding(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
-    int                             resolveSet(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
-    int                             resolveUniformLocation(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
-    bool                            validateInOut(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
-    int                             resolveInOutLocation(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
-    int                             resolveInOutComponent(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
-    int                             resolveInOutIndex(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
-    void                            notifyBinding(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
-    void                            notifyInOut(EShLanguage stage, const char* name, const glslang::TType& type, bool is_live) override;
+    bool                            validateBinding(EShLanguage stage, TVarEntryInfo& ent) override;
+    int                             resolveBinding(EShLanguage stage, TVarEntryInfo& ent) override;
+    int                             resolveSet(EShLanguage stage, TVarEntryInfo& ent) override;
+    int                             resolveUniformLocation(EShLanguage stage, TVarEntryInfo& ent) override;
+    bool                            validateInOut(EShLanguage stage, TVarEntryInfo& ent) override;
+    int                             resolveInOutLocation(EShLanguage stage, TVarEntryInfo& ent) override;
+    int                             resolveInOutComponent(EShLanguage stage, TVarEntryInfo& ent) override;
+    int                             resolveInOutIndex(EShLanguage stage, TVarEntryInfo& ent) override;
+    void                            notifyBinding(EShLanguage stage, TVarEntryInfo& ent) override;
+    void                            notifyInOut(EShLanguage stage, TVarEntryInfo& ent) override;
     void                            endNotifications(EShLanguage stage) override;
     void                            beginNotifications(EShLanguage stage) override;
     void                            beginResolve(EShLanguage stage) override;
