@@ -85,18 +85,17 @@ LOCAL_SRC_FILES := \
     src/GLES/vulkan/utils.cpp
     
 
-LOCAL_CFLAGS = -g -fexceptions -frtti -std=c++17 -Wall -D_GLIBCXX_USE_CXX11_ABI=1
-LOCAL_CFLAGS += -O3
+LOCAL_CFLAGS = -g -fexceptions -frtti -std=c++17 -Wall -D_GLIBCXX_USE_CXX17_ABI=1
+LOCAL_CFLAGS += -O3 -mllvm -polly -flto=thin
 LOCAL_CFLAGS += -DVK_USE_PLATFORM_ANDROID_KHR
 
-LOCAL_LDLIBS := -ldl -llog -lm
+LOCAL_LDLIBS := -ldl -llog -lm -lvulkan
 #building as a shared lib
 
-LOCAL_SHARED_LIBRARIES := OSDependent
-LOCAL_SHARED_LIBRARIES += OGLCompiler
-LOCAL_SHARED_LIBRARIES += HLSL
-LOCAL_SHARED_LIBRARIES += glslang
-LOCAL_SHARED_LIBRARIES += SPIRV
+LOCAL_STATIC_LIBRARIES := OSDependent
+LOCAL_STATIC_LIBRARIES += glslang
+LOCAL_STATIC_LIBRARIES += SPIRV
+LOCAL_STATIC_LIBRARIES += StandAlone
 
 #LOCAL_CFLAGS += -DSHAREDLIB
 include $(BUILD_SHARED_LIBRARY)
