@@ -1,5 +1,6 @@
 //
 // Copyright (C) 2014 LunarG, Inc.
+// Copyright (C) 2015-2018 Google, Inc.
 //
 // All rights reserved.
 //
@@ -34,34 +35,35 @@
 
 #pragma once
 
-#if defined(_MSC_VER) && _MSC_VER >= 1900
-    #pragma warning(disable : 4464) // relative include path contains '..'
-#endif
-
-#include "../glslang/Include/intermediate.h"
-
 #include <string>
 #include <vector>
 
 #include "Logger.h"
+#include "glslang/Include/visibility.h"
 
 namespace glslang {
+class TIntermediate;
 
 struct SpvOptions {
-    SpvOptions() : generateDebugInfo(false), disableOptimizer(true),
-        optimizeSize(false) { }
-    bool generateDebugInfo;
-    bool disableOptimizer;
-    bool optimizeSize;
+    bool generateDebugInfo {false};
+    bool stripDebugInfo {false};
+    bool disableOptimizer {true};
+    bool optimizeSize {false};
+    bool disassemble {false};
+    bool validate {false};
+    bool emitNonSemanticShaderDebugInfo {false};
+    bool emitNonSemanticShaderDebugSource{ false };
+    bool compileOnly{false};
+    bool optimizerAllowExpandedIDBound{false};
 };
 
-void GetSpirvVersion(std::string&);
-int GetSpirvGeneratorVersion();
-void GlslangToSpv(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                  SpvOptions* options = nullptr);
-void GlslangToSpv(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                  spv::SpvBuildLogger* logger, SpvOptions* options = nullptr);
-void OutputSpvBin(const std::vector<unsigned int>& spirv, const char* baseName);
-void OutputSpvHex(const std::vector<unsigned int>& spirv, const char* baseName, const char* varName);
+GLSLANG_EXPORT void GetSpirvVersion(std::string&);
+GLSLANG_EXPORT int GetSpirvGeneratorVersion();
+GLSLANG_EXPORT void GlslangToSpv(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
+                                 SpvOptions* options = nullptr);
+GLSLANG_EXPORT void GlslangToSpv(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
+                                 spv::SpvBuildLogger* logger, SpvOptions* options = nullptr);
+GLSLANG_EXPORT bool OutputSpvBin(const std::vector<unsigned int>& spirv, const char* baseName);
+GLSLANG_EXPORT bool OutputSpvHex(const std::vector<unsigned int>& spirv, const char* baseName, const char* varName);
 
 }
