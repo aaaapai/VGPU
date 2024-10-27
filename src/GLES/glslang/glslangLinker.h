@@ -38,7 +38,7 @@ class GlslangLinker {
 private:
     glslang::TProgram* mSlangProgram;
     glslang::TProgram* mSlangProgram400;
-    GlslangIoMapResolver mIoMapResolver;
+    void mIoMapResolver();
 
     void CleanUp();
 
