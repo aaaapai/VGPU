@@ -4,14 +4,12 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@main
       - name: Build VGPU
         run: |
-         #wget https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
-         #unzip android-ndk-r25c-linux.zip >> /dev/null
-         $ANDROID_NDK_LATEST_HOME/ndk-build APP_PLATFORM=android-21 APP_BUILD_SCRIPT=./Android.mk NDK_PROJECT_PATH=.
+         $ANDROID_NDK_LATEST_HOME/ndk-build APP_PLATFORM=android-24 APP_BUILD_SCRIPT=./Android.mk NDK_PROJECT_PATH=.
       - name: Upload VGPU libs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@main
         with:
           name: vgpu
           path: obj/local/
