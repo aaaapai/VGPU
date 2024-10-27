@@ -10,7 +10,8 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := vgpu
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/glslang/include
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/glslang/SPIRV
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/glslang/glslang/Include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/src/GLES
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/src/EGL/include
