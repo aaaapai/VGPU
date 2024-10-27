@@ -115,7 +115,7 @@ LOCAL_SRC_FILES:= \
 		SPIRV/SpvBuilder.cpp \
 		SPIRV/SpvPostProcess.cpp \
 		SPIRV/SpvTools.cpp \
-		SPIRV/disassemble.cpp \
+		# SPIRV/disassemble.cpp \
 		SPIRV/doc.cpp
 LOCAL_C_INCLUDES:=$(LOCAL_PATH) \
 	$(LOCAL_PATH)/glslang/MachineIndependent \
