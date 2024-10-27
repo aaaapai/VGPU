@@ -1,6 +1,7 @@
+#ifndef _PCH_H
+#define _PCH_H
 //
-// Copyright (C) 2015-2016 Google, Inc.
-//
+// Copyright (C) 2018 The Khronos Group Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -15,7 +16,7 @@
 //    disclaimer in the documentation and/or other materials provided
 //    with the distribution.
 //
-//    Neither the name of Google Inc. nor the names of its
+//    Neither the name of 3Dlabs Inc. Ltd. nor the names of its
 //    contributors may be used to endorse or promote products derived
 //    from this software without specific prior written permission.
 //
@@ -31,26 +32,18 @@
 // LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-
 //
-// Visit the nodes in the glslang intermediate tree representation to
-// propagate 'noContraction' qualifier.
-//
+#include <sstream>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <climits>
+#include <iostream>
+#include <sstream>
+#include <memory>
+#include "SymbolTable.h"
+#include "ParseHelper.h"
+#include "Scan.h"
+#include "ScanContext.h"
 
-#pragma once
-
-#include "../Include/intermediate.h"
-
-namespace glslang {
-
-// Propagates the 'precise' qualifier for objects (objects marked with
-// 'noContraction' qualifier) from the shader source specified 'precise'
-// variables to all the involved objects, and add 'noContraction' qualifier for
-// the involved arithmetic operations.
-// Note that the same qualifier: 'noContraction' is used in both object nodes
-// and arithmetic operation nodes, but has different meaning. For object nodes,
-// 'noContraction' means the object is 'precise'; and for arithmetic operation
-// nodes, it means the operation should not be contracted.
-void PropagateNoContraction(const glslang::TIntermediate& intermediate);
-
-} // end namespace glslang
+#endif /* _PCH_H */
