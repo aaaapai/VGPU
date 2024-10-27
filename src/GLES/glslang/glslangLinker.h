@@ -38,7 +38,7 @@ class GlslangLinker {
 private:
     glslang::TProgram* mSlangProgram;
     glslang::TProgram* mSlangProgram400;
-    GlslangIoMapResolver mIoMapResolver();
+    (void)GlslangIoMapResolver mIoMapResolver;
 
     void CleanUp();
 
@@ -53,7 +53,7 @@ public:
 
     inline glslang::TProgram* GetSlangProgram()                           const { FUN_ENTRY(GL_LOG_TRACE); return mSlangProgram; }
     inline glslang::TProgram* GetSlangProgram400()                        const { FUN_ENTRY(GL_LOG_TRACE); return mSlangProgram400; }
-    inline const GlslangLinker::GlslangIoMapResolver* GetIoMapResolver()                 const { FUN_ENTRY(GL_LOG_TRACE); return &mIoMapResolver; }
+    inline const GlslangIoMapResolver* GetIoMapResolver()                 const { FUN_ENTRY(GL_LOG_TRACE); return &mIoMapResolver; }
 };
 
 #endif // __GLSLANGLINKER_H__
