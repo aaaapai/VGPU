@@ -2,6 +2,7 @@
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2013 LunarG, Inc.
 // Copyright (C) 2017 ARM Limited.
+// Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
 //
@@ -61,6 +62,13 @@ enum TBasicType {
     EbtSampler,
     EbtStruct,
     EbtBlock,
+    EbtAccStruct,
+    EbtReference,
+    EbtRayQuery,
+    EbtHitObjectNV,
+    EbtCoopmat,
+    // SPIR-V type defined by spirv_type
+    EbtSpirvType,
 
     // HLSL types that live only temporarily.
     EbtString,
@@ -87,6 +95,16 @@ enum TStorageQualifier {
     EvqUniform,       // read only, shared with app
     EvqBuffer,        // read/write, shared with app
     EvqShared,        // compute shader's read/write 'shared' qualifier
+    EvqSpirvStorageClass, // spirv_storage_class
+
+    EvqPayload,
+    EvqPayloadIn,
+    EvqHitAttr,
+    EvqCallableData,
+    EvqCallableDataIn,
+    EvqHitObjectAttrNV,
+
+    EvqtaskPayloadSharedEXT,
 
     // parameters
     EvqIn,            // also, for 'in' in the grammar before we know if it's a pipeline input or an 'in' parameter
@@ -111,6 +129,9 @@ enum TStorageQualifier {
     // built-ins written by fragment shader
     EvqFragColor,
     EvqFragDepth,
+    EvqFragStencil,
+
+    EvqTileImageEXT,
 
     // end of list
     EvqLast
@@ -207,7 +228,6 @@ enum TBuiltInVariable {
     EbvSampleMask,
     EbvHelperInvocation,
 
-#ifdef AMD_EXTENSIONS
     EbvBaryCoordNoPersp,
     EbvBaryCoordNoPerspCentroid,
     EbvBaryCoordNoPerspSample,
@@ -215,19 +235,77 @@ enum TBuiltInVariable {
     EbvBaryCoordSmoothCentroid,
     EbvBaryCoordSmoothSample,
     EbvBaryCoordPullModel,
-#endif
 
     EbvViewIndex,
     EbvDeviceIndex,
 
-#ifdef NV_EXTENSIONS
+    EbvShadingRateKHR,
+    EbvPrimitiveShadingRateKHR,
+
+    EbvFragSizeEXT,
+    EbvFragInvocationCountEXT,
+
+    EbvSecondaryFragDataEXT,
+    EbvSecondaryFragColorEXT,
+
     EbvViewportMaskNV,
     EbvSecondaryPositionNV,
     EbvSecondaryViewportMaskNV,
     EbvPositionPerViewNV,
     EbvViewportMaskPerViewNV,
     EbvFragFullyCoveredNV,
-#endif 
+    EbvFragmentSizeNV,
+    EbvInvocationsPerPixelNV,
+    // ray tracing
+    EbvLaunchId,
+    EbvLaunchSize,
+    EbvInstanceCustomIndex,
+    EbvGeometryIndex,
+    EbvWorldRayOrigin,
+    EbvWorldRayDirection,
+    EbvObjectRayOrigin,
+    EbvObjectRayDirection,
+    EbvRayTmin,
+    EbvRayTmax,
+    EbvCullMask,
+    EbvHitKind,
+    EbvObjectToWorld,
+    EbvObjectToWorld3x4,
+    EbvWorldToObject,
+    EbvWorldToObject3x4,
+    EbvIncomingRayFlags,
+    EbvCurrentRayTimeNV,
+    // barycentrics
+    EbvBaryCoordNV,
+    EbvBaryCoordNoPerspNV,
+    EbvBaryCoordEXT,
+    EbvBaryCoordNoPerspEXT,
+    // mesh shaders
+    EbvTaskCountNV,
+    EbvPrimitiveCountNV,
+    EbvPrimitiveIndicesNV,
+    EbvClipDistancePerViewNV,
+    EbvCullDistancePerViewNV,
+    EbvLayerPerViewNV,
+    EbvMeshViewCountNV,
+    EbvMeshViewIndicesNV,
+
+    EbvMicroTrianglePositionNV,
+    EbvMicroTriangleBaryNV,
+    EbvHitKindFrontFacingMicroTriangleNV,
+    EbvHitKindBackFacingMicroTriangleNV,
+
+    //GL_EXT_mesh_shader
+    EbvPrimitivePointIndicesEXT,
+    EbvPrimitiveLineIndicesEXT,
+    EbvPrimitiveTriangleIndicesEXT,
+    EbvCullPrimitiveEXT,
+
+    // sm builtins
+    EbvWarpsPerSM,
+    EbvSMCount,
+    EbvWarpID,
+    EbvSMID,
 
     // HLSL built-ins that live only temporarily, until they get remapped
     // to one of the above.
@@ -244,7 +322,25 @@ enum TBuiltInVariable {
     EbvByteAddressBuffer,
     EbvRWByteAddressBuffer,
 
+    // ARM specific core builtins
+    EbvCoreCountARM,
+    EbvCoreIDARM,
+    EbvCoreMaxIDARM,
+    EbvWarpIDARM,
+    EbvWarpMaxIDARM,
+
+    EbvPositionFetch,
+
     EbvLast
+};
+
+// In this enum, order matters; users can assume higher precision is a bigger value
+// and EpqNone is 0.
+enum TPrecisionQualifier {
+    EpqNone = 0,
+    EpqLow,
+    EpqMedium,
+    EpqHigh
 };
 
 // These will show up in error messages
@@ -255,6 +351,7 @@ __inline const char* GetStorageQualifierString(TStorageQualifier q)
     case EvqGlobal:         return "global";         break;
     case EvqConst:          return "const";          break;
     case EvqConstReadOnly:  return "const (read only)"; break;
+    case EvqSpirvStorageClass: return "spirv_storage_class"; break;
     case EvqVaryingIn:      return "in";             break;
     case EvqVaryingOut:     return "out";            break;
     case EvqUniform:        return "uniform";        break;
@@ -273,6 +370,14 @@ __inline const char* GetStorageQualifierString(TStorageQualifier q)
     case EvqPointCoord:     return "gl_PointCoord";  break;
     case EvqFragColor:      return "fragColor";      break;
     case EvqFragDepth:      return "gl_FragDepth";   break;
+    case EvqFragStencil:    return "gl_FragStencilRefARB"; break;
+    case EvqPayload:        return "rayPayloadNV";     break;
+    case EvqPayloadIn:      return "rayPayloadInNV";   break;
+    case EvqHitAttr:        return "hitAttributeNV";   break;
+    case EvqCallableData:   return "callableDataNV";   break;
+    case EvqCallableDataIn: return "callableDataInNV"; break;
+    case EvqtaskPayloadSharedEXT: return "taskPayloadSharedEXT"; break;
+    case EvqHitObjectAttrNV:return "hitObjectAttributeNV"; break;
     default:                return "unknown qualifier";
     }
 }
@@ -287,6 +392,8 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvLocalInvocationId:    return "LocalInvocationID";
     case EbvGlobalInvocationId:   return "GlobalInvocationID";
     case EbvLocalInvocationIndex: return "LocalInvocationIndex";
+    case EbvNumSubgroups:         return "NumSubgroups";
+    case EbvSubgroupID:           return "SubgroupID";
     case EbvSubGroupSize:         return "SubGroupSize";
     case EbvSubGroupInvocation:   return "SubGroupInvocation";
     case EbvSubGroupEqMask:       return "SubGroupEqMask";
@@ -294,6 +401,13 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvSubGroupGtMask:       return "SubGroupGtMask";
     case EbvSubGroupLeMask:       return "SubGroupLeMask";
     case EbvSubGroupLtMask:       return "SubGroupLtMask";
+    case EbvSubgroupSize2:        return "SubgroupSize";
+    case EbvSubgroupInvocation2:  return "SubgroupInvocationID";
+    case EbvSubgroupEqMask2:      return "SubgroupEqMask";
+    case EbvSubgroupGeMask2:      return "SubgroupGeMask";
+    case EbvSubgroupGtMask2:      return "SubgroupGtMask";
+    case EbvSubgroupLeMask2:      return "SubgroupLeMask";
+    case EbvSubgroupLtMask2:      return "SubgroupLtMask";
     case EbvVertexId:             return "VertexId";
     case EbvInstanceId:           return "InstanceId";
     case EbvVertexIndex:          return "VertexIndex";
@@ -345,7 +459,6 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvSampleMask:           return "SampleMaskIn";
     case EbvHelperInvocation:     return "HelperInvocation";
 
-#ifdef AMD_EXTENSIONS
     case EbvBaryCoordNoPersp:           return "BaryCoordNoPersp";
     case EbvBaryCoordNoPerspCentroid:   return "BaryCoordNoPerspCentroid";
     case EbvBaryCoordNoPerspSample:     return "BaryCoordNoPerspSample";
@@ -353,31 +466,73 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvBaryCoordSmoothCentroid:    return "BaryCoordSmoothCentroid";
     case EbvBaryCoordSmoothSample:      return "BaryCoordSmoothSample";
     case EbvBaryCoordPullModel:         return "BaryCoordPullModel";
-#endif
 
     case EbvViewIndex:                  return "ViewIndex";
     case EbvDeviceIndex:                return "DeviceIndex";
 
-#ifdef NV_EXTENSIONS
+    case EbvFragSizeEXT:                return "FragSizeEXT";
+    case EbvFragInvocationCountEXT:     return "FragInvocationCountEXT";
+
+    case EbvSecondaryFragDataEXT:       return "SecondaryFragDataEXT";
+    case EbvSecondaryFragColorEXT:      return "SecondaryFragColorEXT";
+
     case EbvViewportMaskNV:             return "ViewportMaskNV";
     case EbvSecondaryPositionNV:        return "SecondaryPositionNV";
     case EbvSecondaryViewportMaskNV:    return "SecondaryViewportMaskNV";
     case EbvPositionPerViewNV:          return "PositionPerViewNV";
     case EbvViewportMaskPerViewNV:      return "ViewportMaskPerViewNV";
     case EbvFragFullyCoveredNV:         return "FragFullyCoveredNV";
-#endif 
+    case EbvFragmentSizeNV:             return "FragmentSizeNV";
+    case EbvInvocationsPerPixelNV:      return "InvocationsPerPixelNV";
+    case EbvLaunchId:                   return "LaunchIdNV";
+    case EbvLaunchSize:                 return "LaunchSizeNV";
+    case EbvInstanceCustomIndex:        return "InstanceCustomIndexNV";
+    case EbvGeometryIndex:              return "GeometryIndexEXT";
+    case EbvWorldRayOrigin:             return "WorldRayOriginNV";
+    case EbvWorldRayDirection:          return "WorldRayDirectionNV";
+    case EbvObjectRayOrigin:            return "ObjectRayOriginNV";
+    case EbvObjectRayDirection:         return "ObjectRayDirectionNV";
+    case EbvRayTmin:                    return "ObjectRayTminNV";
+    case EbvRayTmax:                    return "ObjectRayTmaxNV";
+    case EbvHitKind:                    return "HitKindNV";
+    case EbvIncomingRayFlags:           return "IncomingRayFlagsNV";
+    case EbvObjectToWorld:              return "ObjectToWorldNV";
+    case EbvWorldToObject:              return "WorldToObjectNV";
+    case EbvCurrentRayTimeNV:           return "CurrentRayTimeNV";
+
+    case EbvBaryCoordEXT:
+    case EbvBaryCoordNV:                return "BaryCoordKHR";
+    case EbvBaryCoordNoPerspEXT:
+    case EbvBaryCoordNoPerspNV:         return "BaryCoordNoPerspKHR";
+
+    case EbvTaskCountNV:                return "TaskCountNV";
+    case EbvPrimitiveCountNV:           return "PrimitiveCountNV";
+    case EbvPrimitiveIndicesNV:         return "PrimitiveIndicesNV";
+    case EbvClipDistancePerViewNV:      return "ClipDistancePerViewNV";
+    case EbvCullDistancePerViewNV:      return "CullDistancePerViewNV";
+    case EbvLayerPerViewNV:             return "LayerPerViewNV";
+    case EbvMeshViewCountNV:            return "MeshViewCountNV";
+    case EbvMeshViewIndicesNV:          return "MeshViewIndicesNV";
+    // GL_EXT_mesh_shader
+    case EbvPrimitivePointIndicesEXT:    return "PrimitivePointIndicesEXT";
+    case EbvPrimitiveLineIndicesEXT:     return "PrimitiveLineIndicesEXT";
+    case EbvPrimitiveTriangleIndicesEXT: return "PrimitiveTriangleIndicesEXT";
+    case EbvCullPrimitiveEXT:            return "CullPrimitiveEXT";
+
+    case EbvWarpsPerSM:                 return "WarpsPerSMNV";
+    case EbvSMCount:                    return "SMCountNV";
+    case EbvWarpID:                     return "WarpIDNV";
+    case EbvSMID:                       return "SMIDNV";
+
+    case EbvShadingRateKHR:             return "ShadingRateKHR";
+    case EbvPrimitiveShadingRateKHR:    return "PrimitiveShadingRateKHR";
+
+    case EbvHitKindFrontFacingMicroTriangleNV: return "HitKindFrontFacingMicroTriangleNV";
+    case EbvHitKindBackFacingMicroTriangleNV:  return "HitKindBackFacingMicroTriangleNV";
+
     default:                      return "unknown built-in variable";
     }
 }
-
-// In this enum, order matters; users can assume higher precision is a bigger value
-// and EpqNone is 0.
-enum TPrecisionQualifier {
-    EpqNone = 0,
-    EpqLow,
-    EpqMedium,
-    EpqHigh
-};
 
 __inline const char* GetPrecisionQualifierString(TPrecisionQualifier p)
 {
@@ -433,7 +588,8 @@ __inline bool isTypeFloat(TBasicType type)
     }
 }
 
-__inline int getTypeRank(TBasicType type) {
+__inline int getTypeRank(TBasicType type)
+{
     int res = -1;
     switch(type) {
     case EbtInt8:

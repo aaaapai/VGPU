@@ -133,6 +133,25 @@ struct TBuiltInResource {
     int maxCullDistances;
     int maxCombinedClipAndCullDistances;
     int maxSamples;
+    int maxMeshOutputVerticesNV;
+    int maxMeshOutputPrimitivesNV;
+    int maxMeshWorkGroupSizeX_NV;
+    int maxMeshWorkGroupSizeY_NV;
+    int maxMeshWorkGroupSizeZ_NV;
+    int maxTaskWorkGroupSizeX_NV;
+    int maxTaskWorkGroupSizeY_NV;
+    int maxTaskWorkGroupSizeZ_NV;
+    int maxMeshViewCountNV;
+    int maxMeshOutputVerticesEXT;
+    int maxMeshOutputPrimitivesEXT;
+    int maxMeshWorkGroupSizeX_EXT;
+    int maxMeshWorkGroupSizeY_EXT;
+    int maxMeshWorkGroupSizeZ_EXT;
+    int maxTaskWorkGroupSizeX_EXT;
+    int maxTaskWorkGroupSizeY_EXT;
+    int maxTaskWorkGroupSizeZ_EXT;
+    int maxMeshViewCountEXT;
+    int maxDualSourceDrawBuffersEXT;
 
     TLimits limits;
 };
