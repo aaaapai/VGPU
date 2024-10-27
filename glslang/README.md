@@ -1,37 +1,71 @@
+![Continuous Integration](https://github.com/KhronosGroup/glslang/actions/workflows/continuous_integration.yml/badge.svg)
+![Continuous Deployment](https://github.com/KhronosGroup/glslang/actions/workflows/continuous_deployment.yml/badge.svg)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/KhronosGroup/glslang/badge)](https://securityscorecards.dev/viewer/?uri=github.com/KhronosGroup/glslang)
+
+# News
+
+1. Building glslang as a DLL or shared library is now possible and supported.
+
+2. The `GenericCodeGen`, `MachineIndependent`, `OSDependent`, and `SPIRV` libraries have been integrated into the main `glslang` library. The old separate libraries have replaced with empty stubs for a temporary compatibility period, and they will be removed entirely in the future.
+
+3. A new CMake `ENABLE_SPIRV` option has been added to control whether glslang is built with SPIR-V support. Its default value is `ON`.
+
+4. `OGLCompiler` and `HLSL` stub libraries have been fully removed from the build.
+
+Users are encouraged to utilize the standard approach via [CMAKE_MSVC_RUNTIME_LIBRARY](https://cmake.org/cmake/help/latest/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html).
+
+# Glslang Components and Status
+
+There are several components:
+
+### Reference Validator and GLSL/ESSL -> AST Front End
+
+An OpenGL GLSL and OpenGL|ES GLSL (ESSL) front-end for reference validation and translation of GLSL/ESSL into an internal abstract syntax tree (AST).
+
+**Status**: Virtually complete, with results carrying similar weight as the specifications.
+
+### HLSL -> AST Front End
+
+An HLSL front-end for translation of an approximation of HLSL to glslang's AST form.
+
+**Status**: Partially complete. Semantics are not reference quality and input is not validated.
+This is in contrast to the [DXC project](https://github.com/Microsoft/DirectXShaderCompiler), which receives a much larger investment and attempts to have definitive/reference-level semantics.
+
+See [issue 362](https://github.com/KhronosGroup/glslang/issues/362) and [issue 701](https://github.com/KhronosGroup/glslang/issues/701) for current status.
+
+### AST -> SPIR-V Back End
+
+Translates glslang's AST to the Khronos-specified SPIR-V intermediate language.
+
+**Status**: Virtually complete.
+
+### Reflector
+
+An API for getting reflection information from the AST, reflection types/variables/etc. from the HLL source (not the SPIR-V).
+
+**Status**: There is a large amount of functionality present, but no specification/goal to measure completeness against.  It is accurate for the input HLL and AST, but only approximate for what would later be emitted for SPIR-V.
+
+### Standalone Wrapper
+
+`glslang` is command-line tool for accessing the functionality above.
+
+Status: Complete.
+
+Tasks waiting to be done are documented as GitHub issues.
+
+## Other References
+
 Also see the Khronos landing page for glslang as a reference front end:
 
 https://www.khronos.org/opengles/sdk/tools/Reference-Compiler/
 
-The above page includes where to get binaries, and is kept up to date
-regarding the feature level of glslang.
+The above page, while not kept up to date, includes additional information regarding glslang as a reference validator.
 
-glslang
-=======
+# How to Use Glslang
 
-[![Build Status](https://travis-ci.org/KhronosGroup/glslang.svg?branch=master)](https://travis-ci.org/KhronosGroup/glslang)
-[![Build status](https://ci.appveyor.com/api/projects/status/q6fi9cb0qnhkla68/branch/master?svg=true)](https://ci.appveyor.com/project/Khronoswebmaster/glslang/branch/master)
+## Execution of Standalone Wrapper
 
-An OpenGL and OpenGL ES shader front end and validator.
-
-There are several components:
-
-1. A GLSL/ESSL front-end for reference validation and translation of GLSL/ESSL into an AST.
-
-2. An HLSL front-end for translation of a broad generic HLL into the AST. See [issue 362](https://github.com/KhronosGroup/glslang/issues/362) and [issue 701](https://github.com/KhronosGroup/glslang/issues/701) for current status.
-
-3. A SPIR-V back end for translating the AST to SPIR-V.
-
-4. A standalone wrapper, `glslangValidator`, that can be used as a command-line tool for the above.
-
-How to add a feature protected by a version/extension/stage/profile:  See the
-comment in `glslang/MachineIndependent/Versions.cpp`.
-
-Tasks waiting to be done are documented as GitHub issues.
-
-Execution of Standalone Wrapper
--------------------------------
-
-To use the standalone binary form, execute `glslangValidator`, and it will print
+To use the standalone binary form, execute `glslang`, and it will print
 a usage statement.  Basic operation is to give it a file containing a shader,
 and it will print out warnings/errors and optionally an AST.
 
@@ -43,25 +77,32 @@ The applied stage-specific rules are based on the file extension:
 * `.frag` for a fragment shader
 * `.comp` for a compute shader
 
-There is also a non-shader extension
+For ray tracing pipeline shaders:
+* `.rgen` for a ray generation shader
+* `.rint` for a ray intersection shader
+* `.rahit` for a ray any-hit shader
+* `.rchit` for a ray closest-hit shader
+* `.rmiss` for a ray miss shader
+* `.rcall` for a callable shader
+
+There is also a non-shader extension:
 * `.conf` for a configuration file of limits, see usage statement for example
 
-Building
---------
+## Building (CMake)
 
 Instead of building manually, you can also download the binaries for your
-platform directly from the [master-tot release][master-tot-release] on GitHub.
+platform directly from the [main-tot release][main-tot-release] on GitHub.
 Those binaries are automatically uploaded by the buildbots after successful
-testing and they always reflect the current top of the tree of the master
+testing and they always reflect the current top of the tree of the main
 branch.
 
 ### Dependencies
 
-* A C++11 compiler.
-  (For MSVS: 2015 is recommended, 2013 is fully supported/tested, and 2010 support is attempted, but not tested.)
+* A C++17 compiler.
+  (For MSVS: use 2019 or later.)
 * [CMake][cmake]: for generating compilation targets.
 * make: _Linux_, ninja is an alternative, if configured.
-* [Python 2.7][python]: for executing SPIRV-Tools scripts. (Optional if not using SPIRV-Tools.)
+* [Python 3.x][python]: for executing SPIRV-Tools scripts. (Optional if not using SPIRV-Tools and the 'External' subdirectory does not exist.)
 * [bison][bison]: _optional_, but needed when changing the grammar (glslang.y).
 * [googletest][googletest]: _optional_, but should use if making any changes to glslang.
 
@@ -70,7 +111,7 @@ branch.
 The following steps assume a Bash shell. On Windows, that could be the Git Bash
 shell or some other shell of your choosing.
 
-#### 1) Check-Out this project 
+#### 1) Check-Out this project
 
 ```bash
 cd <parent of where you want glslang to be>
@@ -78,15 +119,6 @@ git clone https://github.com/KhronosGroup/glslang.git
 ```
 
 #### 2) Check-Out External Projects
-
-```bash
-cd <the directory glslang was cloned to, "External" will be a subdirectory>
-git clone https://github.com/google/googletest.git External/googletest
-```
-
-If you wish to assure that SPIR-V generated from HLSL is legal for Vulkan,
-or wish to invoke -Os to reduce SPIR-V size from HLSL or GLSL, install
-spirv-tools with this:
 
 ```bash
 ./update_glslang_sources.py
@@ -105,8 +137,16 @@ cd $BUILD_DIR
 For building on Linux:
 
 ```bash
-cmake -DCMAKE_BUILD_TYPE={Debug|Release|RelWithDebInfo} \
-      -DCMAKE_INSTALL_PREFIX="$(pwd)/install" $SOURCE_DIR
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(pwd)/install" $SOURCE_DIR
+# "Release" (for CMAKE_BUILD_TYPE) could also be "Debug" or "RelWithDebInfo"
+```
+
+For building on Android:
+```bash
+cmake $SOURCE_DIR -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -DANDROID_ABI=arm64-v8a -DCMAKE_BUILD_TYPE=Release -DANDROID_STL=c++_static -DANDROID_PLATFORM=android-24 -DCMAKE_SYSTEM_NAME=Android -DANDROID_TOOLCHAIN=clang -DANDROID_ARM_MODE=arm -DCMAKE_MAKE_PROGRAM=$ANDROID_NDK_HOME/prebuilt/linux-x86_64/bin/make -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake
+# If on Windows will be -DCMAKE_MAKE_PROGRAM=%ANDROID_NDK_HOME%\prebuilt\windows-x86_64\bin\make.exe
+# -G is needed for building on Windows
+# -DANDROID_ABI can also be armeabi-v7a for 32 bit
 ```
 
 For building on Windows:
@@ -118,6 +158,9 @@ cmake $SOURCE_DIR -DCMAKE_INSTALL_PREFIX="$(pwd)/install"
 
 The CMake GUI also works for Windows (version 3.4.1 tested).
 
+Also, consider using `git config --global core.fileMode false` (or with `--local`) on Windows
+to prevent the addition of execution permission on files.
+
 #### 4) Build and Install
 
 ```bash
@@ -125,12 +168,46 @@ The CMake GUI also works for Windows (version 3.4.1 tested).
 make -j4 install
 
 # for Windows:
-cmake --build . --config {Release|Debug|MinSizeRel|RelWithDebInfo} \
-      --target install
+cmake --build . --config Release --target install
+# "Release" (for --config) could also be "Debug", "MinSizeRel", or "RelWithDebInfo"
 ```
 
 If using MSVC, after running CMake to configure, use the
 Configuration Manager to check the `INSTALL` project.
+
+If you want to enable testing via CMake set `GLSLANG_TESTS=ON` when configuring the build.
+
+`GLSLANG_TESTS` is off by default to streamline the packaging / Vulkan SDK process.
+
+### Building (GN)
+
+glslang can also be built with the [GN build system](https://gn.googlesource.com/gn/).
+
+#### 1) Install `depot_tools`
+
+Download [depot_tools.zip](https://storage.googleapis.com/chrome-infra/depot_tools.zip),
+extract to a directory, and add this directory to your `PATH`.
+
+#### 2) Synchronize dependencies and generate build files
+
+This only needs to be done once after updating `glslang`.
+
+With the current directory set to your `glslang` checkout, type:
+
+```bash
+./update_glslang_sources.py
+gclient sync --gclientfile=standalone.gclient
+gn gen out/Default
+```
+
+#### 3) Build
+
+With the current directory set to your `glslang` checkout, type:
+
+```bash
+cd out/Default
+ninja
+```
 
 ### If you need to change the GLSL grammar
 
@@ -148,16 +225,55 @@ bison --defines=MachineIndependent/glslang_tab.cpp.h
       -o MachineIndependent/glslang_tab.cpp
 ```
 
-The above command is also available in the bash script at
-`glslang/updateGrammar`.
+The above command is also available in the bash script in `updateGrammar`,
+when executed from the glslang subdirectory of the glslang repository.
 
-Testing
--------
+### Building to WASM for the Web and Node
+### Building a standalone JS/WASM library for the Web and Node
+
+Use the steps in [Build Steps](#build-steps), with the following notes/exceptions:
+* `emsdk` needs to be present in your executable search path, *PATH* for
+  Bash-like environments:
+  + [Instructions located here](https://emscripten.org/docs/getting_started/downloads.html#sdk-download-and-install)
+* Wrap cmake call: `emcmake cmake`
+* Set `-DENABLE_OPT=OFF`.
+* Set `-DENABLE_HLSL=OFF` if HLSL is not needed.
+* For a standalone JS/WASM library, turn on `-DENABLE_GLSLANG_JS=ON`.
+* To get a fully minimized build, make sure to use `brotli` to compress the .js
+  and .wasm files
+* Note that by default, Emscripten allocates a very small stack size, which may
+  cause stack overflows when compiling large shaders. Use the
+  [STACK_SIZE](https://emscripten.org/docs/tools_reference/settings_reference.html?highlight=environment#stack-size)
+  compiler setting to increase the stack size.
+
+Example:
+
+```sh
+emcmake cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_GLSLANG_JS=ON \
+    -DENABLE_HLSL=OFF -DENABLE_OPT=OFF ..
+```
+
+## Building glslang - Using vcpkg
+
+You can download and install glslang using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+
+    git clone https://github.com/Microsoft/vcpkg.git
+    cd vcpkg
+    ./bootstrap-vcpkg.sh
+    ./vcpkg integrate install
+    ./vcpkg install glslang
+
+The glslang port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+
+## Testing
 
 Right now, there are two test harnesses existing in glslang: one is [Google
 Test](gtests/), one is the [`runtests` script](Test/runtests). The former
 runs unit tests and single-shader single-threaded integration tests, while
 the latter runs multiple-shader linking tests and multi-threaded tests.
+
+Tests may erroneously fail or pass if using `ALLOW_EXTERNAL_SPIRV_TOOLS` with
+any commit other than the one specified in `known_good.json`.
 
 ### Running tests
 
@@ -187,6 +303,11 @@ Running `runtests` script-backed tests:
 ```bash
 cd $SOURCE_DIR/Test && ./runtests
 ```
+
+If some tests fail with validation errors, there may be a mismatch between the
+version of `spirv-val` on the system and the version of glslang.  In this
+case, it is necessary to run `update_glslang_sources.py`.  See "Check-Out
+External Projects" above for more details.
 
 ### Contributing tests
 
@@ -219,8 +340,7 @@ You can add your own private list of tests, not tracked publicly, by using
 `localtestlist` to list non-tracked tests.  This is automatically read
 by `runtests` and included in the `diff` and `bump` process.
 
-Programmatic Interfaces
------------------------
+## Programmatic Interfaces
 
 Another piece of software can programmatically translate shaders to an AST
 using one of two different interfaces:
@@ -232,7 +352,8 @@ The `main()` in `StandAlone/StandAlone.cpp` shows examples using both styles.
 ### C++ Class Interface (new, preferred)
 
 This interface is in roughly the last 1/3 of `ShaderLang.h`.  It is in the
-glslang namespace and contains the following.
+glslang namespace and contains the following, here with suggested calls
+for generating SPIR-V:
 
 ```cxx
 const char* GetEsslVersionString();
@@ -255,16 +376,25 @@ class TProgram
     Reflection queries
 ```
 
-See `ShaderLang.h` and the usage of it in `StandAlone/StandAlone.cpp` for more
-details.
+For just validating (not generating code), substitute these calls:
 
-### C Functional Interface (orignal)
+```cxx
+    setEnvInput(EShSourceHlsl or EShSourceGlsl, stage,  EShClientNone, 0);
+    setEnvClient(EShClientNone, 0);
+    setEnvTarget(EShTargetNone, 0);
+```
+
+See `ShaderLang.h` and the usage of it in `StandAlone/StandAlone.cpp` for more
+details. There is a block comment giving more detail above the calls for
+`setEnvInput, setEnvClient, and setEnvTarget`.
+
+### C Functional Interface (original)
 
 This interface is in roughly the first 2/3 of `ShaderLang.h`, and referred to
 as the `Sh*()` interface, as all the entry points start `Sh`.
 
 The `Sh*()` interface takes a "compiler" call-back object, which it calls after
-building call back that is passed the AST and can then execute a backend on it.
+building call back that is passed the AST and can then execute a back end on it.
 
 The following is a simplified resulting run-time call stack:
 
@@ -275,8 +405,92 @@ ShCompile(shader, compiler) -> compiler(AST) -> <back end>
 In practice, `ShCompile()` takes shader strings, default version, and
 warning/error and other options for controlling compilation.
 
-Basic Internal Operation
-------------------------
+### C Functional Interface (new)
+
+This interface is located `glslang_c_interface.h` and exposes functionality similar to the C++ interface. The following snippet is a complete example showing how to compile GLSL into SPIR-V 1.5 for Vulkan 1.2.
+
+```c
+#include <glslang/Include/glslang_c_interface.h>
+
+// Required for use of glslang_default_resource
+#include <glslang/Public/resource_limits_c.h>
+
+typedef struct SpirVBinary {
+    uint32_t *words; // SPIR-V words
+    int size; // number of words in SPIR-V binary
+} SpirVBinary;
+
+SpirVBinary compileShaderToSPIRV_Vulkan(glslang_stage_t stage, const char* shaderSource, const char* fileName) {
+    const glslang_input_t input = {
+        .language = GLSLANG_SOURCE_GLSL,
+        .stage = stage,
+        .client = GLSLANG_CLIENT_VULKAN,
+        .client_version = GLSLANG_TARGET_VULKAN_1_2,
+        .target_language = GLSLANG_TARGET_SPV,
+        .target_language_version = GLSLANG_TARGET_SPV_1_5,
+        .code = shaderSource,
+        .default_version = 100,
+        .default_profile = GLSLANG_NO_PROFILE,
+        .force_default_version_and_profile = false,
+        .forward_compatible = false,
+        .messages = GLSLANG_MSG_DEFAULT_BIT,
+        .resource = glslang_default_resource(),
+    };
+
+    glslang_shader_t* shader = glslang_shader_create(&input);
+
+    SpirVBinary bin = {
+        .words = NULL,
+        .size = 0,
+    };
+    if (!glslang_shader_preprocess(shader, &input))	{
+        printf("GLSL preprocessing failed %s\n", fileName);
+        printf("%s\n", glslang_shader_get_info_log(shader));
+        printf("%s\n", glslang_shader_get_info_debug_log(shader));
+        printf("%s\n", input.code);
+        glslang_shader_delete(shader);
+        return bin;
+    }
+
+    if (!glslang_shader_parse(shader, &input)) {
+        printf("GLSL parsing failed %s\n", fileName);
+        printf("%s\n", glslang_shader_get_info_log(shader));
+        printf("%s\n", glslang_shader_get_info_debug_log(shader));
+        printf("%s\n", glslang_shader_get_preprocessed_code(shader));
+        glslang_shader_delete(shader);
+        return bin;
+    }
+
+    glslang_program_t* program = glslang_program_create();
+    glslang_program_add_shader(program, shader);
+
+    if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT | GLSLANG_MSG_VULKAN_RULES_BIT)) {
+        printf("GLSL linking failed %s\n", fileName);
+        printf("%s\n", glslang_program_get_info_log(program));
+        printf("%s\n", glslang_program_get_info_debug_log(program));
+        glslang_program_delete(program);
+        glslang_shader_delete(shader);
+        return bin;
+    }
+
+    glslang_program_SPIRV_generate(program, stage);
+
+    bin.size = glslang_program_SPIRV_get_size(program);
+    bin.words = malloc(bin.size * sizeof(uint32_t));
+    glslang_program_SPIRV_get(program, bin.words);
+
+    const char* spirv_messages = glslang_program_SPIRV_get_messages(program);
+    if (spirv_messages)
+        printf("(%s) %s\b", fileName, spirv_messages);
+
+    glslang_program_delete(program);
+    glslang_shader_delete(shader);
+
+    return bin;
+}
+```
+
+## Basic Internal Operation
 
 * Initial lexical analysis is done by the preprocessor in
   `MachineIndependent/Preprocessor`, and then refined by a GLSL scanner
@@ -291,7 +505,7 @@ Basic Internal Operation
 * The intermediate representation is very high-level, and represented
   as an in-memory tree.   This serves to lose no information from the
   original program, and to have efficient transfer of the result from
-  parsing to the back-end.  In the AST, constants are propogated and
+  parsing to the back-end.  In the AST, constants are propagated and
   folded, and a very small amount of dead code is eliminated.
 
   To aid linking and reflection, the last top-level branch in the AST
@@ -323,10 +537,12 @@ Basic Internal Operation
   - the object does not come from the pool, and you have to do normal
     C++ memory management of what you `new`
 
+* Features can be protected by version/extension/stage/profile:
+  See the comment in `glslang/MachineIndependent/Versions.cpp`.
 
 [cmake]: https://cmake.org/
 [python]: https://www.python.org/
 [bison]: https://www.gnu.org/software/bison/
 [googletest]: https://github.com/google/googletest
 [bison-gnu-win32]: http://gnuwin32.sourceforge.net/packages/bison.htm
-[master-tot-release]: https://github.com/KhronosGroup/glslang/releases/tag/master-tot
+[main-tot-release]: https://github.com/KhronosGroup/glslang/releases/tag/main-tot

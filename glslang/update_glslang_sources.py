@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Glslang Authors. All rights reserved.
 #
@@ -17,12 +17,9 @@
 """Get source files for Glslang and its dependencies from public repositories.
 """
 
-from __future__ import print_function
-
 import argparse
 import json
-import distutils.dir_util
-import os.path
+import os
 import subprocess
 import sys
 
@@ -96,7 +93,7 @@ class GoodCommit(object):
     def AddRemote(self):
         """Add the remote 'known-good' if it does not exist."""
         remotes = command_output(['git', 'remote'], self.subdir).splitlines()
-        if 'known-good' not in remotes:
+        if b'known-good' not in remotes:
             command_output(['git', 'remote', 'add', 'known-good', self.GetUrl()], self.subdir)
 
     def HasCommit(self):
@@ -106,7 +103,7 @@ class GoodCommit(object):
                                     cwd=self.subdir)
 
     def Clone(self):
-        distutils.dir_util.mkpath(self.subdir)
+        os.makedirs(self.subdir, exist_ok=True)
         command_output(['git', 'clone', self.GetUrl(), '.'], self.subdir)
 
     def Fetch(self):
@@ -139,7 +136,7 @@ def main():
 
     commits = GetGoodCommits(args.site)
 
-    distutils.dir_util.mkpath(args.dir)
+    os.makedirs(args.dir, exist_ok=True)
     print('Change directory to {d}'.format(d=args.dir))
     os.chdir(args.dir)
 
