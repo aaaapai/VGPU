@@ -29,6 +29,8 @@
 #include "glslang/Public/ShaderLang.h"
 #include "glslang/Include/Types.h"
 
+#include "../MachineIndependent/iomapper.h"
+
 class GlslangIoMapResolver : public glslang::TIoMapResolver
 {
 private:
