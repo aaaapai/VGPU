@@ -89,7 +89,7 @@ LOCAL_CFLAGS = -fno-exceptions -fno-rtti -std=c++11 -Wall -D_GLIBCXX_USE_CXX11_A
 LOCAL_CFLAGS += -O3
 LOCAL_CFLAGS += -DVK_USE_PLATFORM_ANDROID_KHR
 
-LOCAL_LDLIBS := -ldl -llog -lm
+LOCAL_LDLIBS := -ldl -llog -lm -lvulkan -lc++
 #building as a shared lib
 
 LOCAL_SHARED_LIBRARIES := OSDependent
