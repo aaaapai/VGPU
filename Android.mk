@@ -40,11 +40,6 @@ LOCAL_SRC_FILES := \
     src/GLES/context/contextTexture.cpp \
     src/GLES/context/contextUtilities.cpp \
     src/GLES/context/contextVertexAttributes.cpp \
-    src/GLES/glslang/glslangCompiler.cpp \
-    src/GLES/glslang/glslangLinker.cpp \
-    src/GLES/glslang/glslangIoMapResolver.cpp \
-    src/GLES/glslang/glslangShaderCompiler.cpp \
-    src/GLES/glslang/shaderConverter.cpp \
     src/GLES/resources/attachment.cpp \
     src/GLES/resources/bufferObject.cpp \
     src/GLES/resources/framebuffer.cpp \
