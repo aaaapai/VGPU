@@ -139,8 +139,6 @@ LOCAL_SRC_FILES:= \
 	SPIRV/Logger.cpp \
 	SPIRV/SPVRemapper.cpp \
 	SPIRV/SpvBuilder.cpp \
-#	SPIRV/SpvPostProcess.cpp \
-#	SPIRV/SpvTools.cpp \
 	SPIRV/disassemble.cpp \
 	SPIRV/doc.cpp
 	
