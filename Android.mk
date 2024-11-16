@@ -90,7 +90,7 @@ LOCAL_CFLAGS = -fexceptions -frtti -std=c++17 -Wall -D_GLIBCXX_USE_CXX17_ABI=1
 LOCAL_CFLAGS += -O3 -mllvm -polly -flto=thin
 LOCAL_CFLAGS += -DVK_USE_PLATFORM_ANDROID_KHR
 
-LOCAL_LDLIBS := -ldl -llog -lm -lvulkan
+LOCAL_LDLIBS := -ldl -llog -lm -lvulkan -lc++
 #building as a shared lib
 
 LOCAL_STATIC_LIBRARIES := OSDependent
