@@ -59,7 +59,7 @@ const EGLConfig_t EglConfigs[2] = {
                                      0,   // LuminanceSize
                                      0,   // AlphaMaskSize
                         EGL_RGB_BUFFER,   // ColorBufferType
-                    EGL_OPENGL_ES2_BIT,   // RenderableType
+                EGL_OPENGL_ES3_BIT_KHR,   // RenderableType
                               EGL_NONE,   // MatchNativePixmap
                                    0x4,   // Conformant
                              EGL_FALSE,   // RecordableAndroid
@@ -96,7 +96,7 @@ const EGLConfig_t EglConfigs[2] = {
                                      0,   // LuminanceSize
                                      0,   // AlphaMaskSize
                         EGL_RGB_BUFFER,   // ColorBufferType
-                    EGL_OPENGL_ES2_BIT,   // RenderableType
+                EGL_OPENGL_ES3_BIT_KHR,   // RenderableType
                               EGL_NONE,   // MatchNativePixmap
                                    0x4,   // Conformant
                              EGL_FALSE,   // RecordableAndroid
