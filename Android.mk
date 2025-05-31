@@ -27,10 +27,7 @@ LOCAL_SRC_FILES := \
     src/EGL/source/display/displayDriver.cpp \
     src/EGL/source/display/displayDriversContainer.cpp \
     src/EGL/source/platform/platformFactory.cpp \
-    src/EGL/source/platform/vulkan/WSIPlaneDisplay.cpp \
-    src/EGL/source/platform/vulkan/WSIXcb.cpp \
     src/EGL/source/platform/vulkan/vulkanAPI.cpp \
-    src/EGL/source/platform/vulkan/vulkanWSI.cpp \
     src/EGL/source/platform/vulkan/vulkanWindowInterface.cpp \
     src/EGL/source/rendering_api/rendering_api.c \
     src/EGL/source/thread/renderingThread.cpp \
