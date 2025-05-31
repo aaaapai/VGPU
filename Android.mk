@@ -19,6 +19,21 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES) -DBCMHOST
 
 LOCAL_SRC_FILES := \
     src/loader/vk_loader.cpp \
+    src/EGL/source/api/egl.cpp \
+    src/EGL/source/api/eglSurface.cpp \
+    src/EGL/source/api/eglContext.cpp \
+    src/EGL/source/api/eglConfig.cpp \
+    src/EGL/source/display/displayDriver.cpp \
+    src/EGL/source/display/displayDriversContainer.cpp \
+    src/EGL/source/platform/platformFactory.cpp \
+    src/EGL/source/platform/vulkan/WSIPlaneDisplay.cpp \
+    src/EGL/source/platform/vulkan/WSIXcb.cpp \
+    src/EGL/source/platform/vulkan/vulkanAPI.cpp \
+    src/EGL/source/platform/vulkan/vulkanWSI.cpp \
+    src/EGL/source/platform/vulkan/vulkanWindowInterface.cpp \
+    src/EGL/source/rendering_api/rendering_api.c \
+    src/EGL/source/thread/renderingThread.cpp \
+    src/EGL/source/utils/eglLogger.cpp \
     src/GLES/api/gl.cpp \
     src/GLES/api/eglInterface.cpp \
     src/GLES/context/context.cpp \
