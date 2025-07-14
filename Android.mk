@@ -102,7 +102,7 @@ LOCAL_CFLAGS += -DNO_GBM
 #LOCAL_CFLAGS += -DNO_INIT_CONSTRUCTOR
 LOCAL_CFLAGS += -DDEFAULT_ES=3
 
-LOCAL_LDLIBS := -ldl -llog -L$(LOCAL_PATH)/libs/arm-v8a -lglslang -lspirv-cross-c-shared -l:c++.a -lc
+LOCAL_LDLIBS := -ldl -llog -L$(LOCAL_PATH)/libs/arm-v8a -lglslang -lspirv-cross-c-shared -lc++abi -lc++_static -lc
 #building as a shared lib
 
 LOCAL_CFLAGS += -DSHAREDLIB
