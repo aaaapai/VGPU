@@ -11,6 +11,7 @@
 
 #include "pack/shaderconv.h"
 #include "pack/shader.h"
+#include "../glsl/glsl_for_es.h"
 
 int vsh = 0;
 int pot;
