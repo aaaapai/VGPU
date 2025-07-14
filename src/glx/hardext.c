@@ -5,7 +5,7 @@
 #include "../gl/init.h"
 #include "../gl/logs.h"
 #include "../gl/loader.h"
-#include <../gl/shader.h>
+#include "../gl/shader.h"
 #ifndef ANDROID
 #include "rpi.h"
 #endif
