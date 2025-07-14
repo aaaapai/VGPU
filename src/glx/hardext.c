@@ -91,6 +91,32 @@ static int testGLSL(const char* version, int uniformLoc) {
     return compiled;
 }
 
+int testGenericShader(struct shader_s* shader_source) {
+    // check the current shader is valid for compilation
+    LOAD_GLES2(glCreateShader);
+    LOAD_GLES2(glShaderSource);
+    LOAD_GLES2(glCompileShader);
+    LOAD_GLES2(glGetShaderiv);
+    LOAD_GLES2(glDeleteShader);
+
+    GLuint shad = gles_glCreateShader(shader_source->type);
+    gles_glShaderSource(shad, 1, (const GLchar *const *)(&shader_source->converted), NULL);
+    gles_glCompileShader(shad);
+    GLint compiled;
+    gles_glGetShaderiv(shad, GL_COMPILE_STATUS, &compiled);
+    /*
+    if(!compiled) {
+        LOAD_GLES2(glGetShaderInfoLog)
+        char buff[500];
+        gles_glGetShaderInfoLog(shad, 500, NULL, buff);
+        SHUT_LOGD("LIBGL: \"%s\" failed, message:\n%s\n", version, buff);
+    }
+    */
+    gles_glDeleteShader(shad);
+
+    return compiled;
+}
+
 /*
 static int testMAXdrawbuffers(const char* number) {
     LOAD_GLES2_(glCreateShader);
