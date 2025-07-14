@@ -1,7 +1,7 @@
 #ifndef _GLX_HARDEXT_H_
 #define _GLX_HARDEXT_H_
 
-#include <../gl/shader.h>
+#include "../gl/shader.h"
 
 #define VEND_IMGTEC     0x0100
 #define VEND_ARM        0x0200
