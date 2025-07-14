@@ -27,8 +27,6 @@ int pot;
 #define DBG(a)
 #endif
 
-#define GL_COMPUTE_SHADER                 0x91B9
-
 
 KHASH_MAP_IMPL_INT(shaderlist, shader_t *);
 
