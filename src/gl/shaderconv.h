@@ -14,4 +14,5 @@ const char* hasBuiltinAttrib(const char* vertexShader, int Att);
 const char* builtinAttribGLName(const char* name);
 const char* builtinAttribInternalName(const char* name);
 
+const char* gl4es_convertARB(const char* source, GLboolean isVertex, char* erro_msg, int* error_pos); 
 #endif // _GL4ES_SHADERCONV_H_
