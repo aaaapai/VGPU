@@ -162,6 +162,13 @@ void gl4es_glCompileShader(GLuint shader) {
         noerrorShim();
 }
 
+bool is_direct_shader(char *glsl)
+{
+    bool es2_ability = glstate->glsl->es2 && !strncmp(glsl, "#version 100", 12);
+    bool es3_ability = globals4es.es >= 3 && can_run_essl3(globals4es.esversion != -1?globals4es.esversion:globals4es.es * 100, glsl);
+    return es2_ability || es3_ability;
+}
+
 void gl4es_glShaderSource(GLuint shader, GLsizei count, const GLchar * const *string, const GLint *length) {
     ////DBG(printf("glShaderSource(%d, %d, %p, %p)\n", shader, count, string, length);)
     // sanity check
