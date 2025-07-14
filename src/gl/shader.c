@@ -163,6 +163,26 @@ void gl4es_glCompileShader(GLuint shader) {
         noerrorShim();
 }
 
+bool can_run_essl3(int esversion, const char *glsl) {
+    int glsl_version = 0;
+    if (strncmp(glsl, "#version 100", 12) == 0) {
+        return true;
+    } else if (strncmp(glsl, "#version 300 es", 15) == 0) {
+        return true;
+    } else if (strncmp(glsl, "#version 310 es", 15) == 0) {
+        glsl_version = 310;
+    } else if (strncmp(glsl, "#version 320 es", 15) == 0) {
+        glsl_version = 320;
+    } else {
+        return false;
+    }
+    if (esversion >= glsl_version) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool is_direct_shader(char *glsl)
 {
     bool es2_ability = glstate->glsl->es2 && !strncmp(glsl, "#version 100", 12);
