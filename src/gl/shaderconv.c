@@ -11,6 +11,7 @@
 
 #include "loader.h"
 #include "pack/shaderconv.h"
+#include "../glsl/glsl_for_es.h"
 
 typedef struct {
     const char* glname;
