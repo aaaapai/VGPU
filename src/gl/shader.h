@@ -29,6 +29,11 @@ typedef struct shader_s {
     char*           converted;  // converted source (or null if nothing)
     // shaderconv
     shaderconv_need_t  need;    // the varying need / provide of the shader
+
+    uniforms_declarations uniforms_declarations;
+    int                   uniforms_declarations_count;
+    int                   is_converted_essl_320;
+    char*                 before_patch;
 } shader_t;
 
 KHASH_MAP_DECLARE_INT(shaderlist, shader_t *);
