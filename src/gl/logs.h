@@ -4,9 +4,19 @@
 #include <stdio.h>
 #include "init.h"
 //----------------------------------------------------------------------------
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void LogPrintf_NoPrefix(const char *fmt,...);
 void LogFPrintf(FILE *fp,const char *fmt,...);
 void LogPrintf(const char *fmt,...);
+
+#ifdef __cplusplus
+}
+#endif
+
 //----------------------------------------------------------------------------
 #ifdef GL4ES_SILENCE_MESSAGES
 	#define SHUT_LOGD(...)
@@ -20,5 +30,6 @@ void LogPrintf(const char *fmt,...);
 //----------------------------------------------------------------------------
 #define LOGD(...) LogPrintf(__VA_ARGS__)
 #define LOGE(...) LogFPrintf(stderr,__VA_ARGS__)
+
 //----------------------------------------------------------------------------
 #endif // _GL4ES_LOGS_H_
