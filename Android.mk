@@ -95,7 +95,7 @@ LOCAL_SRC_FILES := \
         src/glsl/glsl_for_es.cpp \
 		
 
-LOCAL_CFLAGS += -g -O3 -include include/android_debug.h
+LOCAL_CFLAGS += -g -O3 -Wno-pointer-sign -include include/android_debug.h
 #LOCAL_CFLAGS += -funwind-tables -fvisibility=hidden
 LOCAL_CFLAGS += -DNOX11
 LOCAL_CFLAGS += -DNO_GBM
