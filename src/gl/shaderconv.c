@@ -401,6 +401,31 @@ static const char* gl4es_VertexAttrib = "_gl4es_VertexAttrib_";
 char gl_VA[MAX_VATTRIB][32] = {0};
 char gl4es_VA[MAX_VATTRIB][32] = {0};
 
+char* process_uniform_declarations(char* glslCode, uniforms_declarations uniformVector, int* uniformCount);
+
+char * ConvertShaderConditionally(struct shader_s * shader_source){
+    int shaderCompileStatus;
+
+    // First, vanilla gl4es, no forward port
+    shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need, 0);
+    shaderCompileStatus = testGenericShader(shader_source);
+
+    // Then, attempt back porting if desired of constrained to do so
+    if(!shaderCompileStatus && globals4es.vgpu_backport) {
+        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need, 0);
+        shader_source->converted = ConvertShaderVgpu(shader_source);
+        shaderCompileStatus = testGenericShader(shader_source);
+    }
+
+    // At last resort, use forward porting
+    if(!shaderCompileStatus && hardext.glsl300es){
+        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0, &shader_source->need, 1);
+        shader_source->converted = ConvertShaderVgpu(shader_source);
+    }
+
+    return shader_source->converted;
+}
+
 char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, int forwardPort)
 {
     if(gl_VA[0][0]=='\0') {
