@@ -92,6 +92,7 @@ LOCAL_SRC_FILES := \
 	src/gl/math/matheval.c \
 	src/gl/array.c \
 	src/gl/matvec.c \
+        src/glsl/glsl_for_es.cpp \
 		
 
 LOCAL_CFLAGS += -g -O3 -include include/android_debug.h
