@@ -12,6 +12,7 @@
 #include "loader.h"
 #include "pack/shaderconv.h"
 #include "../glsl/glsl_for_es.h"
+#include "../glx/hardext.h"
 
 typedef struct {
     const char* glname;
@@ -414,7 +415,7 @@ char * ConvertShaderConditionally(struct shader_s * shader_source){
     if(!shaderCompileStatus && globals4es.vgpu_backport) {
         shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need, 0);
         shader_source->converted = ConvertShaderVgpu(shader_source);
-        shaderCompileStatus = testGenericShader(shader_source);
+        shaderCompileStatus = testGenericShader(shader_source, );
     }
 
     // At last resort, use forward porting
