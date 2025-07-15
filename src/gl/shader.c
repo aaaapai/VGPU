@@ -247,7 +247,7 @@ void gl4es_glShaderSource(GLuint shader, GLsizei count, const GLchar * const *st
             else {
 		glshader->converted = ConvertShader(glshader->source, glshader->type==GL_VERTEX_SHADER?1:0, &glshader->need, 0);
 		glshader->converted = GLSLtoGLSLES(glshader->converted, glshader->type, globals4es.esversion);
-		glshader->converted = strdup(glshader->converted!=NULL?ConvertShaderConditionally(glshader):ConvertShaderConditionally(glshader));
+		glshader->converted = strdup(glshader->converted!=NULL?ConvertShaderConditionally(glshader->converted):ConvertShaderConditionally(glshader->converted));
                 glshader->is_converted_essl_320 = 1;
             }
             DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted))
