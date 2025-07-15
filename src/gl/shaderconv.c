@@ -23,6 +23,14 @@
 
 int NO_OPERATOR_VALUE = 9999;
 
+static const char* switch_template = " switch (%n%[^)] { ";
+static const char* case_template = " case %n%[^:] ";
+static const char* declaration_template = " const float %s = %s ;";
+
+#define VARIABLE_SIZE 1024
+#define MODE_SWITCH 0
+#define MODE_CASE 1
+
 char* FindAndCorrect(char* source, int* length, int mode) {
    const char*     template = mode == MODE_SWITCH ? switch_template : mode == MODE_CASE ? case_template : NULL;
    char*           scan_source = source;
