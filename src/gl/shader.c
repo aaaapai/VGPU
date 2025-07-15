@@ -251,6 +251,7 @@ void gl4es_glShaderSource(GLuint shader, GLsizei count, const GLchar * const *st
 	    glshader->is_converted_essl_320 = 1;
             DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted))
         }
+      }
         // ======== add marker
         add_marker(&glshader->converted);
         // ======== Handling the first half of an implicit type conversion.
