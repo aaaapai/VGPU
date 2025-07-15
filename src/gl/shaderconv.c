@@ -437,13 +437,6 @@ char * ConvertShaderVgpu(struct shader_s * shader_source){
     char * source = shader_source->converted;
     int sourceLength = strlen(source) + 1;
 
-        // Else, skip the conversion
-        if (globals4es.vgpu_dump){
-            printf("SKIPPING OLD SHADER CONVERSION \n");
-        }
-        return source;
-    }
-
 
     // Remove 'const' storage qualifier
     //printf("REMOVING CONST qualifiers");
