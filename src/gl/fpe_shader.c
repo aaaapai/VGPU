@@ -1390,7 +1390,7 @@ const char* const* fpe_FragmentShader(shaderconv_need_t* need, fpe_state_t *stat
     return (const char* const*)&shad;
 }
 
-const char* const* fpe_CustomVertexShader(const char* initial, fpe_state_t* state)
+const char* const* fpe_CustomVertexShader(const char* initial, fpe_state_t* state, int default_fragment)
 {
     int planes = state->plane;
     char buff[1024];
@@ -1401,6 +1401,9 @@ const char* const* fpe_CustomVertexShader(const char* initial, fpe_state_t* stat
 
     strcpy(shad, "");
     ShadAppend(initial);
+
+    int color = default_fragment?(strstr(initial, "_gl4es_Color")?0:1):0;   // need to add a simple color variant?
+    if(default_fragment) SHUT_LOGD("fpe_CustomVertexShader(%p, %p, %d)\n%s\ncolor=%d\n", initial, state, default_fragment, initial, color);
 
     // add some uniform and varying
     if(planes) {
@@ -1415,8 +1418,17 @@ const char* const* fpe_CustomVertexShader(const char* initial, fpe_state_t* stat
             }
         }
     }
+
+    if(color) {
+        sprintf(buff, "attribute lowp vec4 _gl4es_Color;\n");
+        ShadAppend(buff);
+        ++headline;
+        sprintf(buff, "varying lowp vec4 Color;\n");
+        ShadAppend(buff);
+        ++headline;
+    }
     // wrap main if needed
-    if(planes) {
+    if(planes || color) {
         // wrap real main...
         shad = InplaceReplace(shad, &shad_cap, "main", "_gl4es_main");
     }
@@ -1424,11 +1436,17 @@ const char* const* fpe_CustomVertexShader(const char* initial, fpe_state_t* stat
     // let's start
     if(strstr(shad, "_gl4es_main")) {
         ShadAppend("\nvoid main() {\n");
-        ShadAppend("_gl4es_main();");
+        if(color) {
+            sprintf(buff, "Color = _gl4es_Color;\n");
+        }
+        ShadAppend("_gl4es_main();\n");
         if(planes) {
+	    int clipvertex = 0;
+            if(strstr(shad, "gl4es_ClipVertex"))
+                clipvertex = 1;
             for (int i=0; i<hardext.maxplanes; i++) {
                 if((planes>>i)&1) {
-                    sprintf(buff, "clippedvertex_%d = dot(gl_ModelViewMatrix * gl_Vertex, _gl4es_ClipPlane_%d);\n", i, i);
+                    sprintf(buff, "clippedvertex_%d = dot(%s, _gl4es_ClipPlane_%d);\n", i, clipvertex?"gl4es_ClipVertex":"gl_ModelViewMatrix * gl_Vertex", i);
                     ShadAppend(buff);
                 }
             }
