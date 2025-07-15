@@ -32,6 +32,38 @@ static const char* declaration_template = " const float %s = %s ;";
 #define MODE_SWITCH 0
 #define MODE_CASE 1
 
+int GetClosingTokenPosition(const char * source, int initialTokenPosition){
+    return GetClosingTokenPositionTokenOverride(source, initialTokenPosition, source[initialTokenPosition]);
+}
+
+int GetClosingTokenPositionTokenOverride(const char * source, int initialTokenPosition, char initialToken){
+    // Step 1: Determine the closing token
+    char openingToken = initialToken;
+    char * closingTokens = GetClosingTokens(openingToken);
+    SHUT_LOGD("Closing tokens: %s", closingTokens);
+    if (strlen(closingTokens) == 0){
+        SHUT_LOGD("No closing tokens, somehow \n");
+        return initialTokenPosition;
+    }
+
+    // Step 2: Go through the string to find what we want
+    for(int i=initialTokenPosition+1; i<strlen(source); ++i){
+        // Loop though all the available closing tokens first, since opening/closing tokens can be identical
+        for(int j=0; j<strlen(closingTokens); ++j){
+            if (source[i] == closingTokens[j]){
+                return i;
+            }
+        }
+
+        if (isOpeningToken(source[i])){
+            i = GetClosingTokenPosition(source, i);
+            continue;
+        }
+    }
+    SHUT_LOGD("No closing tokens 2 , somehow \n");
+    return initialTokenPosition; // Nothing found
+}
+
 char * BackportConstArrays(char *source, int * sourceLength){
     unsigned long startPoint = strstrPos(source, "const");
     if(startPoint == 0){
