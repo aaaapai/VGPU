@@ -330,6 +330,7 @@ std::string makeGLSLversionNewer(const std::string& glslCode, GLenum glsl_type) 
         result = replaceText(result, "varying", "in");
     }
 
+    return result;
 }
 
 char* GLSLtoGLSLES(char* glsl_code, GLenum glsl_type, uint essl_version) {
