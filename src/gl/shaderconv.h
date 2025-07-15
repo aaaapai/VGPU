@@ -12,8 +12,8 @@ char* process_uniform_declarations(char* glslCode, uniforms_declarations uniform
 char* ConvertShaderVgpu(struct shader_s* shader_source);
 
 char * ConvertShaderConditionally(struct shader_s * shader_source);
-char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need);
-//char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need, int forwardPort);
+//char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need);
+char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need, int forwardPort);
 
 int isBuiltinAttrib(const char* name);
 int isBuiltinMatrix(const char* name);
