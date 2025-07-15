@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <math.h>
 
 int NO_OPERATOR_VALUE = 9999;
 
