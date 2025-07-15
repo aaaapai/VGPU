@@ -1171,14 +1171,14 @@ char * ConvertShaderConditionally(struct shader_s * shader_source){
 
     // Then, attempt back porting if desired of constrained to do so
     if(!shaderCompileStatus && globals4es.vgpu_backport) {
-        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need, 0);
+        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need);
         shader_source->converted = ConvertShaderVgpu(shader_source);
         shaderCompileStatus = testGenericShader(shader_source);
     }
 
     // At last resort, use forward porting
     if(!shaderCompileStatus && hardext.glsl300es){
-        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0, &shader_source->need, 1);
+        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0, &shader_source->need);
         shader_source->converted = ConvertShaderVgpu(shader_source);
     }
 
