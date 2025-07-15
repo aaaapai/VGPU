@@ -1460,22 +1460,24 @@ char * ConvertShaderConditionally(struct shader_s * shader_source){
     int shaderCompileStatus;
 
     // First, vanilla gl4es, no forward port
-    shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need);
+    shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need, 0);
     shaderCompileStatus = testGenericShader(shader_source);
 
     // Then, attempt back porting if desired of constrained to do so
     if(!shaderCompileStatus && globals4es.vgpu_backport) {
-        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need);
+        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need, 0);
         shader_source->converted = ConvertShaderVgpu(shader_source);
         shaderCompileStatus = testGenericShader(shader_source);
     }
 
     // At last resort, use forward porting
     if(!shaderCompileStatus && hardext.glsl300es){
-        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0, &shader_source->need);
+        shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0, &shader_source->need, 1);
         shader_source->converted = ConvertShaderVgpu(shader_source);
     }
 
+    // Process uniform declarations
+    shader_source->converted = process_uniform_declarations(shader_source->converted, shader_source->uniforms_declarations, &shader_source->uniforms_declarations_count);
     return shader_source->converted;
 }
 
@@ -1484,12 +1486,48 @@ char * ConvertShaderConditionally(struct shader_s * shader_source){
 char * ConvertShaderVgpu(struct shader_s * shader_source){
 
     if (globals4es.vgpu_dump){
-        printf("New VGPU Shader source:\n%s\n", shader_source->converted);
+        SHUT_LOGD("New VGPU Shader source:\n%s\n", shader_source->converted);
     }
 
     // Get the shader source
     char * source = shader_source->converted;
     int sourceLength = strlen(source) + 1;
+    // For now, skip stuff
+    if(FindString(source, "#version 100")){
+        if(globals4es.vgpu_force_conv || globals4es.vgpu_backport){
+            if (shader_source->type == GL_VERTEX_SHADER){
+                source = ReplaceVariableName(source, &sourceLength, "in", "attribute");
+                source = ReplaceVariableName(source, &sourceLength, "out", "varying");
+            }else{
+                source = ReplaceVariableName(source, &sourceLength, "in", "varying");
+                source = ReplaceFragmentOut(source, &sourceLength);
+            }
+
+            // Well, we don't have gl_VertexID on OPENGL 1
+            source = ReplaceVariableName(source, &sourceLength, "gl_VertexID", "0");
+            source = InplaceReplaceSimple(source, &sourceLength, "ivec", "vec");
+            source = InplaceReplaceSimple(source, &sourceLength, "bvec", "vec");
+            source = InplaceReplaceSimple(source, &sourceLength, "flat ", "");
+
+            source = BackportConstArrays(source, &sourceLength);
+            int insertPoint = FindPositionAfterVersion(source);
+            source = InplaceInsertByIndex(source, &sourceLength, insertPoint + 1, "#define texelFetch(a, b, c) vec4(1.0,1.0,1.0,1.0) \n");
+
+            source = ReplaceModOperator(source, &sourceLength);
+
+            if (globals4es.vgpu_dump){
+                SHUT_LOGD("New VGPU Shader conversion:\n%s\n", source);
+            }
+
+            return source;
+        }
+
+        // Else, skip the conversion
+        if (globals4es.vgpu_dump){
+            SHUT_LOGD("SKIPPING OLD SHADER CONVERSION \n%s\n", source);
+        }
+        return source;
+    }
 
 
     // Remove 'const' storage qualifier
@@ -1507,15 +1545,9 @@ char * ConvertShaderVgpu(struct shader_s * shader_source){
     source = ReplaceVariableName(source, &sourceLength, "texture", "vgpu_texture");
 
     source = ReplaceFunctionName(source, &sourceLength, "texture2D", "texture");
+    source = ReplaceFunctionName(source, &sourceLength, "texture3D", "texture");
     source = ReplaceFunctionName(source, &sourceLength, "texture2DLod", "textureLod");
 
-/*
-    source = InplaceReplaceSimple(source, &sourceLength, "#version 100", "#version 150");
-    source = InplaceReplaceSimple(source, &sourceLength, "#version 110", "#version 150");
-    source = InplaceReplaceSimple(source, &sourceLength, "#version 120", "#version 150");
-    source = InplaceReplaceSimple(source, &sourceLength, "#version 130", "#version 150");
-    source = InplaceReplaceSimple(source, &sourceLength, "#version 140", "#version 150");
-*/
 
     //printf("REMOVING \" CHARS ");
     // " not really supported here
@@ -1546,6 +1578,11 @@ char * ConvertShaderVgpu(struct shader_s * shader_source){
     // Since everything is a float, we need to overload WAY TOO MANY functions
     source = WrapIvecFunctions(source, &sourceLength);
 
+    //printf("REMOVING DUBIOUS DEFINES");
+    source = InplaceReplaceSimple(source, &sourceLength, "#define texture texture2D\n", "");
+    source = InplaceReplaceSimple(source, &sourceLength, "#define attribute in\n", "");
+    source = InplaceReplaceSimple(source, &sourceLength, "#define varying out\n", "");
+
     if (shader_source->type == GL_VERTEX_SHADER){
         source = ReplaceVariableName(source, &sourceLength, "attribute", "in");
         source = ReplaceVariableName(source, &sourceLength, "varying", "out");
@@ -1563,9 +1600,11 @@ char * ConvertShaderVgpu(struct shader_s * shader_source){
 
     //printf("FUCKING UP PRECISION");
     source = ReplacePrecisionQualifiers(source, &sourceLength, shader_source->type == GL_VERTEX_SHADER);
+    
+    source = ProcessSwitchCases(source, &sourceLength);
 
     if (globals4es.vgpu_dump){
-        printf("New VGPU Shader conversion:\n%s\n", source);
+        SHUT_LOGD("New VGPU Shader conversion:\n%s\n", source);
     }
 
     return source;
