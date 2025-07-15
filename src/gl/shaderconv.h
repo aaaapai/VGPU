@@ -5,7 +5,7 @@
 #include "program.h"
 
 void set_uniforms_default_value(GLuint program, uniforms_declarations uniformVector, int uniformCount);
-char* process_uniform_declarations(char* glslCode, uniforms_declarations uniformVector, int* uniformCount);
+// char* process_uniform_declarations(char* glslCode, uniforms_declarations uniformVector, int* uniformCount); //整个Github都找不到这样的java8东西
 char* ConvertShaderVgpu(struct shader_s* shader_source);
 
 char * ConvertShaderConditionally(struct shader_s * shader_source);
