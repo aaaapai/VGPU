@@ -405,6 +405,23 @@ char gl_VA[MAX_VATTRIB][32] = {0};
 char gl4es_VA[MAX_VATTRIB][32] = {0};
 
 
+int FindPositionAfterDirectives(char * source){
+    const char * position = FindString(source, "#version");
+    if (position == NULL) return 0;
+    for(int i=7; 1; ++i){
+        if(position[i] == '\n'){
+            if(position[i+1] == '#') continue; // a directive is present right after, skip
+            return i;
+        }
+    }
+}
+
+unsigned long strstrPos(const char * haystack, const char * needle){
+    char * substr = strstr(haystack, needle);
+    if (substr == NULL) return 0;
+    return (substr - haystack);
+}
+
 char * ReplacePrecisionQualifiers(char * source, int * sourceLength, int isVertex){
 
     if(!doesShaderVersionContainsES(source)){
