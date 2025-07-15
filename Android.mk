@@ -95,13 +95,13 @@ LOCAL_SRC_FILES := \
         src/glsl/glsl_for_es.cpp \
 		
 
-LOCAL_CFLAGS += -g -O3 -DANDROID -Wno-pointer-sign -Wno-macro-redefined -Wno-dangling-else -Wno-pointer-sign -Wno-implicit-const-int-float-conversion -include include/android_debug.h
-#LOCAL_CFLAGS += -funwind-tables -fvisibility=hidden
+LOCAL_CFLAGS += -g -O3 -DANDROID -std=c17 -Wno-pointer-sign -Wno-macro-redefined -Wno-dangling-else -Wno-pointer-sign -Wno-implicit-const-int-float-conversion -include include/android_debug.h
+LOCAL_CFLAGS += -funwind-tables # -fvisibility=hidden
 LOCAL_CFLAGS += -DNOX11
 LOCAL_CFLAGS += -DNO_GBM
 #LOCAL_CFLAGS += -DNO_INIT_CONSTRUCTOR
 LOCAL_CFLAGS += -DDEFAULT_ES=3
-
+LOCAL_CPPFLAGS += -std=c++20
 LOCAL_LDLIBS := -ldl -llog -L$(LOCAL_PATH)/libs/arm-v8a -lglslang -lspirv-cross-c-shared -lc++abi -lc++_static -lc
 #building as a shared lib
 
