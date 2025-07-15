@@ -1277,7 +1277,7 @@ char * ConvertShaderVgpu(struct shader_s * shader_source){
     return source;
 }
 
-char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, int forwardPort)
+char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
 {
     if(gl_VA[0][0]=='\0') {
     for (int i=0; i<MAX_VATTRIB; ++i) {
