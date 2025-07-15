@@ -423,7 +423,7 @@ program_t* fpe_CustomShader(program_t* glprogram, fpe_state_t* state)
     if(fpe->glprogram==NULL) {
         GLint status;
         fpe->vert = gl4es_glCreateShader(GL_VERTEX_SHADER);
-        fpe_CustomVertexShader(glprogram->last_vert->source, state, 0), NULL);
+        fpe_CustomVertexShader(glprogram->last_vert->source, state, 0);
         gl4es_glCompileShader(fpe->vert);
         gl4es_glGetShaderiv(fpe->vert, GL_COMPILE_STATUS, &status);
         if(status!=GL_TRUE) {
