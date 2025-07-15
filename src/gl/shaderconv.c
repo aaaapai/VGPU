@@ -14,6 +14,8 @@
 #include "../glsl/glsl_for_es.h"
 #include "../glx/hardext.h"
 
+int NO_OPERATOR_VALUE = 9999;
+
 typedef struct {
     const char* glname;
     const char* name;
@@ -729,6 +731,173 @@ int GetOperatorValue(char operator){
  * @param limit The left or right index of the operand
  * @return newly allocated string with the operand
  */
+char* GetOperandFromOperator(char* source, int operatorIndex, int rightOperand, int * limit){
+    int parserState = 0;
+    int parserDirection = rightOperand ? 1 : -1;
+    int operandStartIndex = 0, operandEndIndex = 0;
+    int parenthesesLeft = 0, hasFoundParentheses = 0;
+    int operatorValue = GetOperatorValue(source[operatorIndex]);
+    int lastOperator = 0; // Used to determine priority for unary operators
+
+    char parenthesesStart = rightOperand ? '(' : ')';
+    char parenthesesEnd = rightOperand ? ')' : '(';
+    int stringIndex = operatorIndex;
+
+    // Get to the operand
+    while (parserState == 0){
+        stringIndex += parserDirection;
+        if(source[stringIndex] != ' '){
+            parserState = 1;
+            // Place the mark
+            if(rightOperand){
+                operandStartIndex = stringIndex;
+            }else{
+                operandEndIndex = stringIndex;
+            }
+
+            // Special case for unary operator when parsing to the right
+            if(GetOperatorValue(source[stringIndex]) == 3 ){ // 3 is +- operators
+                stringIndex += parserDirection;
+            }
+        }
+    }
+
+    // Get to the other side of the operand, the twist is here.
+    while (parenthesesLeft > 0 || parserState == 1){
+
+        // Look for parentheses
+        if(source[stringIndex] == parenthesesStart){
+            hasFoundParentheses = 1;
+            parenthesesLeft += 1;
+            stringIndex += parserDirection;
+            continue;
+        }
+
+        if(source[stringIndex] == parenthesesEnd){
+            hasFoundParentheses = 1;
+            parenthesesLeft -= 1;
+
+            // Likely to happen in a function call
+            if(parenthesesLeft < 0){
+                parserState = 3;
+                if(rightOperand){
+                    operandEndIndex = stringIndex - 1;
+                }else{
+                    operandStartIndex = stringIndex + 1;
+                }
+                continue;
+            }
+            stringIndex += parserDirection;
+            continue;
+        }
+
+        // Small optimisation
+        if(parenthesesLeft > 0){
+            stringIndex += parserDirection;
+            continue;
+        }
+
+        // So by now the following assumptions are made
+        // 1 - We aren't between parentheses
+        // 2 - No implicit multiplications are present
+        // 3 - No fuckery with operators like "test = +-+-+-+-+-+-+-+-3;" although I attempt to support them
+
+        // Higher value operators have less priority
+        int currentValue = GetOperatorValue(source[stringIndex]);
+
+
+        // The condition is different due to the evaluation order which is left to right, aside from the unary operators
+        if((rightOperand ? currentValue >= operatorValue: currentValue > operatorValue)){
+            if(currentValue == NO_OPERATOR_VALUE){
+                if(source[stringIndex] == ' '){
+                    stringIndex += parserDirection;
+                    continue;
+                }
+
+                // Found an operand, so reset the operator eval for unary
+                if(rightOperand) lastOperator = NO_OPERATOR_VALUE;
+
+                // maybe it is the start of a function ?
+                if(hasFoundParentheses){
+                    parserState = 2;
+                    continue;
+                }
+                // If no full () set is found, assume we didn't fully travel the operand
+                stringIndex += parserDirection;
+                continue;
+            }
+
+            // Special case when parsing unary operator to the right
+            if(rightOperand && operatorValue == 3 && lastOperator < currentValue){
+                stringIndex += parserDirection;
+                continue;
+            }
+
+            // Stop, we found an operator of same worth.
+            parserState = 3;
+            if(rightOperand){
+                operandEndIndex = stringIndex - 1;
+            }else{
+                operandStartIndex = stringIndex + 1;
+            }
+        }
+
+        // Special case for unary operators from the right
+        if(rightOperand && operatorValue == 3) { // 3 is + - operators
+            lastOperator = currentValue;
+        } // Special case for unary operators from the left
+        if(!rightOperand && operatorValue < 3 && currentValue == 3){
+            lastOperator = NO_OPERATOR_VALUE;
+            for(int j=1; 1; ++j){
+                int subCurrentValue = GetOperatorValue(source[stringIndex - j]);
+                if(subCurrentValue != NO_OPERATOR_VALUE){
+                    lastOperator = subCurrentValue;
+                    continue;
+                }
+
+                // No operator value, can be almost anything
+                if(source[stringIndex - j] == ' ') continue;
+                // Else we found something. Did we found a high priority operator ?
+                if(lastOperator <= operatorValue){ // If so, we allow continuing and going out of the loop
+                    stringIndex -= j;
+                    parserState = 1;
+                    break;
+                }
+                // No other operator found
+                operandStartIndex = stringIndex;
+                parserState = 3;
+                break;
+            }
+        }
+        stringIndex += parserDirection;
+    }
+
+    // Status when we get the name of a function and nothing else.
+    while (parserState == 2){
+        if(source[stringIndex] != ' '){
+            stringIndex += parserDirection;
+            continue;
+        }
+        if(rightOperand){
+            operandEndIndex = stringIndex - 1;
+        }else{
+            operandStartIndex = stringIndex + 1;
+        }
+        parserState = 3;
+    }
+
+    // At this point, we know both the start and end point of our operand, let's copy it
+    char * operand = malloc(operandEndIndex - operandStartIndex + 2);
+    memcpy(operand, source+operandStartIndex, operandEndIndex - operandStartIndex + 1);
+    // Make sure the string is null terminated
+    operand[operandEndIndex - operandStartIndex + 1] = '\0';
+
+    // Send back the limitIndex
+    *limit = rightOperand ? operandEndIndex : operandStartIndex;
+
+    return operand;
+}
+
 char* GetOperandFromOperator(char* source, int operatorIndex, int rightOperand, int * limit){
     int parserState = 0;
     int parserDirection = rightOperand ? 1 : -1;
