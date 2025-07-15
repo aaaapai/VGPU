@@ -31,6 +31,107 @@ static const char* declaration_template = " const float %s = %s ;";
 #define MODE_SWITCH 0
 #define MODE_CASE 1
 
+char * BackportConstArrays(char *source, int * sourceLength){
+    unsigned long startPoint = strstrPos(source, "const");
+    if(startPoint == 0){
+        return source;
+    }
+    int constStart, constStop;
+    GetNextWord(source, startPoint, &constStart, &constStop); // Catch the "const"
+
+    int typeStart, typeStop;
+    GetNextWord(source, constStop, &typeStart, &typeStop); // Catch the type, without []
+
+    int variableNameStart, variableNameStop;
+    GetNextWord(source, typeStop, &variableNameStart, &variableNameStop); // Catch the var name
+    char * variableName = ExtractString(source, variableNameStart, variableNameStop);
+
+    //Now, verify the data type is actually an array
+    char * tokenStart = strstr(source + typeStop, "[");
+    if( tokenStart != NULL && (tokenStart - source) < variableNameStart){
+        // We've found an array. So we need to get to the starting parenthesis and isolate each member
+        int startArray = GetNextTokenPosition(source, variableNameStop, '(', "");
+        int endArray = GetClosingTokenPosition(source, startArray);
+
+        // First pass, to count the amount of entries in the array
+        int arrayEntryCount = -1;
+        int currentPoint = startArray;
+        while (currentPoint < endArray){
+            ++arrayEntryCount;
+            currentPoint = GetClosingTokenPositionTokenOverride(source, currentPoint, ',');
+        }
+        if(currentPoint == endArray){
+            ++arrayEntryCount;
+        }
+
+        // Now we know how many entries we have, we can copy data
+        int entryStart = startArray + 1;
+        int entryEnd;
+        for(int j=0; j<arrayEntryCount; ++j){
+            // First, isolate the array entry
+            entryEnd = GetClosingTokenPositionTokenOverride(source, entryStart, ',');
+
+            // Replace the entry and jump to the end of the replacement
+            source = InplaceReplaceByIndex(source, sourceLength, entryEnd , entryEnd +1, ";}"); // +2 - 1
+            // Build the string to insert
+            int indexStringLength = (j == 0 ? 1 : (int)(log10(j)+1));
+            char * replacementString = malloc(19 + indexStringLength + 1);
+            replacementString[19 + indexStringLength + 1] = '\0';
+            memcpy(replacementString, "if(index==", 10);
+            sprintf(replacementString + 10, "%d", j);
+            strcpy(replacementString + 10 + indexStringLength, "){return ");
+
+            // Insert the correct index in the replacement string
+            source = InplaceInsertByIndex(source, sourceLength, entryStart, replacementString);
+
+            entryStart = entryEnd + 19 + indexStringLength + 2;
+            free(replacementString);
+        }
+
+        // The replacement string is not needed anymore
+
+
+        // Add The last "}" to close the function
+        source = InplaceInsertByIndex(source, sourceLength, entryStart, "}");
+        // Add the argument section of the function
+        source = InplaceReplaceByIndex(source, sourceLength, variableNameStop, startArray , "(int index){");
+        // Remove the []
+        source = InplaceReplaceByIndex(source, sourceLength, typeStop, variableNameStart - 1, " ");
+        // Finally, remove the "const" keyword
+        source = InplaceReplaceByIndex(source, sourceLength, startPoint, startPoint + 5, " ");
+
+        // Now, we have to turn every array access to a function call
+        // TODO change the start position to be more accurate to the end of the function !
+        for(int k = strstrPos(source + endArray, variableName) + endArray; k < strlen(source); ){
+            int startAccess = GetNextTokenPosition(source, k, '[', "");
+            int endAccess = GetClosingTokenPosition(source, startAccess);
+            source = InplaceReplaceByIndex(source, sourceLength, endAccess, endAccess, ")");
+            source = InplaceReplaceByIndex(source, sourceLength, startAccess, startAccess, "(");
+
+            int nextPos = strstrPos(source + k, variableName) + k;
+            if(nextPos == k) break;
+            k = nextPos;
+        }
+
+        free(variableName);
+
+    }else{
+        // Nothing, go to the next loop iteration
+    }
+
+    return source;
+}
+
+int FindPositionAfterVersion(char * source){
+    const char * position = FindString(source, "#version");
+    if (position == NULL) return 0;
+    for(int i=7; 1; ++i){
+        if(position[i] == '\n'){
+            return i;
+        }
+    }
+}
+
 char* FindAndCorrect(char* source, int* length, int mode) {
    const char*     template = mode == MODE_SWITCH ? switch_template : mode == MODE_CASE ? case_template : NULL;
    char*           scan_source = source;
