@@ -18,6 +18,8 @@ const char* hasBuiltinAttrib(const char* vertexShader, int Att);
 const char* builtinAttribGLName(const char* name);
 const char* builtinAttribInternalName(const char* name);
 
+
+char* GetOperandFromOperator(char* source, int operatorIndex, int rightOperand, int * limit);
 char * ForceIntegerArrayAccess(char* source, int * sourceLength);
 char * CoerceIntToFloat(char * source, int * sourceLength);
 char * ReplaceModOperator(char * source, int * sourceLength);
