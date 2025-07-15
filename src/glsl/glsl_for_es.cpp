@@ -305,7 +305,7 @@ std::string replaceText(const std::string& input, const std::string& from, const
     return result;
 }
 
-const char* addPrecisionToSampler2DShadow(const char*& glslCode) {
+std::string addPrecisionToSampler2DShadow(const char*& glslCode) {
     std::string result = glslCode;
     result = replaceText(result, " sampler2DShadow ", " highp sampler2DShadow ");
     result = replaceText(result, " mediump highp ", " mediump ");
@@ -347,20 +347,14 @@ char* GLSLtoGLSLES(char* glsl_code, GLenum glsl_type, uint essl_version) {
     } else if (glsl_version < 330) {
         glsl_version = 330;
         std::string shader_str(shader_source);
-        shader_str.insert("#version 110", "#version 330");
-        shader_str.insert("#version 120", "#version 330");
-        shader_str.insert("#version 130", "#version 330");
-        shader_str.insert("#version 140", "#version 330");
-        shader_str.insert("#version 150", "#version 330");
-        shader_str.insert("#version 320", "#version 330");
 
         if (glsl_type == GL_VERTEX_SHADER) {
-           shader_str.insert("attribute", "in");
-           shader_str.insert("varying", "out");
+            shader_str = replaceText(shader_str, "attribute", "in");
+            shader_str = replaceText(shader_str, "varying", "out");
         } else if (glsl_type == GL_FRAGMENT_SHADER) {
-           shader_str.insert("varying", "in");
+            shader_str = replaceText(shader_str, "varying", "in");
         }
-    
+
         std::strcpy(shader_source, shader_str.c_str());
     }
     DBG(SHUT_LOGD("GLSL version: %d",glsl_version);)
