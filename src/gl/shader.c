@@ -164,8 +164,8 @@ void gl4es_glCompileShader(GLuint shader) {
 
 bool can_run_essl3(int esversion, const char *glsl) {
     int glsl_version = 0;
-    if (strncmp(glsl, "#version 100", 12) == 0) {
-        return true;
+    if (strncmp(glsl, "#version 100 es", 15) == 0) {
+	return true;
     } else if (strncmp(glsl, "#version 300 es", 15) == 0) {
         return true;
     } else if (strncmp(glsl, "#version 310 es", 15) == 0) {
@@ -175,7 +175,7 @@ bool can_run_essl3(int esversion, const char *glsl) {
     } else {
         return false;
     }
-    if (esversion >= glsl_version) {
+    if (esversion >= glsl_version && glsl_version != 0) {
         return true;
     } else {
         return false;
@@ -239,13 +239,13 @@ void gl4es_glShaderSource(GLuint shader, GLsizei count, const GLchar * const *st
             int glsl_version = getGLSLVersion(glshader->source);
             DBG(SHUT_LOGD("[INFO] [Shader] Shader source: "))
             DBG(SHUT_LOGD("%s", glshader->source))
-            if(glsl_version < 140 || globals4es.esversion < 300) {
+            if(globals4es.esversion < 300) {
                 glshader->converted = strdup(ConvertShaderConditionally(glshader));
                 glshader->is_converted_essl_320 = 0;
             }
             else {
-                char* result = GLSLtoGLSLES(glshader->source, glshader->type, globals4es.esversion);
-                glshader->converted = strdup(result!=NULL?ConvertShaderConditionally(glshader):ConvertShaderConditionally(glshader));
+		glshader->converted = strdup(glshader->source!=NULL?ConvertShaderConditionally(glshader):ConvertShaderConditionally(glshader));
+                glshader->converted = GLSLtoGLSLES(glshader->converted, glshader->type, globals4es.esversion);
                 glshader->is_converted_essl_320 = 1;
             }
             DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted))
