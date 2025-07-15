@@ -23,6 +23,12 @@
 
 int NO_OPERATOR_VALUE = 9999;
 
+char* ProcessSwitchCases(char* source, int* length) {
+   source = FindAndCorrect(source, length, MODE_SWITCH);
+   source = FindAndCorrect(source, length, MODE_CASE);
+   return source;
+}
+
 void trim(char* str) {
     char* end;
     while (isspace((unsigned char)*str)) str++;
