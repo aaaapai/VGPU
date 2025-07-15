@@ -235,12 +235,18 @@ void gl4es_glShaderSource(GLuint shader, GLsizei count, const GLchar * const *st
     	
     	
         // adapt shader if needed (i.e. not an es2 context and shader is not #version 100)
-        if(glstate->glsl->es2 && !strncmp(glshader->source, "#version 100", 12))
-	{
-            glshader->converted = strdup(glshader->source);
-	    glshader->is_converted_essl_320 = 0;
-        } else {
-	    glshader->converted = GLSLtoGLSLES(glshader->source, glshader->type, globals4es.esversion);
+      if(is_direct_shader(glshader->source)) {
+			glshader->converted = strdup(glshader->source);
+      } else {
+	int glsl_version = getGLSLVersion(glshader->source);
+        DBG(SHUT_LOGD("[INFO] [Shader] Shader source: "))
+        DBG(SHUT_LOGD("%s", glshader->source))
+        if(glsl_version < 140 || globals4es.esversion < 300) {
+                glshader->converted = strdup(ConvertShaderConditionally(glshader));
+                glshader->is_converted_essl_320 = 0;
+	} else {
+            char* result = GLSLtoGLSLES(glshader->source, glshader->type, globals4es.esversion);
+            glshader->converted = strdup(result!=NULL?process_uniform_declarations(result, glshader->uniforms_declarations, &glshader->uniforms_declarations_count):ConvertShaderConditionally(glshader));
             glshader->converted = ConvertShader(glshader->converted, glshader->type==GL_VERTEX_SHADER?1:0, &glshader->need);
 	    glshader->is_converted_essl_320 = 1;
             DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted))
