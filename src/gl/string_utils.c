@@ -8,6 +8,14 @@ const char* AllSeparators = " \t\n\r.,;()[]{}-<>+*/%&\\\"'^$=!:?";
 
 char* ResizeIfNeeded(char* pBuffer, int *size, int addsize);
 
+int isDigit(char value) {
+     return (value >= '0' && value <= '9');
+}
+
+int isValidFunctionName(char value){
+     return ((value >= 'a' && value <= 'z') || (value >= 'A' && value <= 'Z') || (value == '_'));
+}
+
 char* InplaceReplace(char* pBuffer, int* size, const char* S, const char* D)
 {
     int lS = strlen(S), lD = strlen(D);
