@@ -32,6 +32,22 @@ static const char* declaration_template = " const float %s = %s ;";
 #define MODE_SWITCH 0
 #define MODE_CASE 1
 
+char * GetClosingTokens(char openingToken){
+    switch (openingToken) {
+        case '(': return ")";
+        case '[': return "]";
+        case ',': return ",)";
+        case '{': return "}";
+        case ';': return ";";
+
+        default: return "";
+    }
+}
+
+int isOpeningToken(char openingToken){
+    return openingToken != ',' && strlen(GetClosingTokens(openingToken)) != 0;
+}
+
 int GetClosingTokenPosition(const char * source, int initialTokenPosition){
     return GetClosingTokenPositionTokenOverride(source, initialTokenPosition, source[initialTokenPosition]);
 }
