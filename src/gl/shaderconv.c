@@ -14,7 +14,291 @@
 #include "../glsl/glsl_for_es.h"
 #include "../glx/hardext.h"
 
+#include <GL/gl.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <stdbool.h>
+
 int NO_OPERATOR_VALUE = 9999;
+
+// 辅助函数：解析并提取浮点数数组（用于 mat2, mat3, mat4, vec2, vec3, vec4 类型的处理）
+int parse_floats_from_string(const char* str, GLfloat* outValues, int maxCount) {
+    int count = 0;
+    const char* cursor = str;
+
+    while (*cursor && count < maxCount) {
+        // 查找数字
+        while (*cursor && !isdigit((unsigned char)*cursor) && *cursor != '-') cursor++;
+
+        if (*cursor) {
+            outValues[count++] = strtof(cursor, (char**)&cursor);
+        }
+    }
+    return count;
+}
+
+// 辅助函数：解析 bool 类型
+int parse_bool_from_string(const char* str) {
+    if (strcmp(str, "true") == 0) {
+        return GL_TRUE;
+    }
+    if (strcmp(str, "false") == 0) {
+        return GL_FALSE;
+    }
+    return -1;  // 无效的布尔值
+}
+
+bool has_valid_data(char arr[256]) {
+    for (int i = 0; i < 256; i++) {
+        if (arr[i] != '\0' && arr[i] != '\n' && arr[i] != ' ') {
+            return true;
+        }
+    }
+    return false;
+}
+
+void set_uniforms_default_value(GLuint program, uniforms_declarations uniformVector, int uniformCount) {
+    for (int i = 0; i < uniformCount; i++) {
+        uniform_declaration_s* uniform = &uniformVector[i];
+        if (!has_valid_data(uniform->variable) || !has_valid_data(uniform->initial_value))
+        {
+            break;
+        }
+        GLint location = gl4es_glGetUniformLocation(program, uniform->variable);
+
+        if (location == -1) {
+            SHUT_LOGD("Uniform variable %s not found in shader program.\n", uniform->variable);
+            continue;
+        }
+
+        if (strstr(uniform->initial_value, "mat4") != NULL) {
+            GLfloat matValues[16];
+            int count = parse_floats_from_string(uniform->initial_value, matValues, 16);
+
+            if (count == 16) {
+                gl4es_glUniformMatrix4fv(location, 1, GL_FALSE, matValues);
+            }
+            else {
+                SHUT_LOGD("Invalid mat4 initial value for uniform %s\n", uniform->variable);
+            }
+        }
+        else if (strstr(uniform->initial_value, "mat3") != NULL) {
+            GLfloat matValues[9];
+            int count = parse_floats_from_string(uniform->initial_value, matValues, 9);
+
+            if (count == 9) {
+                gl4es_glUniformMatrix3fv(location, 1, GL_FALSE, matValues);
+            }
+            else {
+                SHUT_LOGD("Invalid mat3 initial value for uniform %s\n", uniform->variable);
+            }
+        }
+        else if (strstr(uniform->initial_value, "mat2") != NULL) {
+            GLfloat matValues[4];
+            int count = parse_floats_from_string(uniform->initial_value, matValues, 4);
+
+            if (count == 4) {
+                gl4es_glUniformMatrix2fv(location, 1, GL_FALSE, matValues);
+            }
+            else {
+                SHUT_LOGD("Invalid mat2 initial value for uniform %s\n", uniform->variable);
+            }
+        }
+        else if (strstr(uniform->initial_value, "vec4") != NULL) {
+            GLfloat vecValues[4];
+            int count = parse_floats_from_string(uniform->initial_value, vecValues, 4);
+
+            if (count == 4) {
+                gl4es_glUniform4fv(location, 1, vecValues);
+            }
+            else {
+                SHUT_LOGD("Invalid vec4 initial value for uniform %s\n", uniform->variable);
+            }
+        }
+        else if (strstr(uniform->initial_value, "vec3") != NULL) {
+            // 处理 vec3 类型
+            GLfloat vecValues[3];
+            int count = parse_floats_from_string(uniform->initial_value, vecValues, 3);
+
+            if (count == 3) {
+                gl4es_glUniform3fv(location, 1, vecValues);
+            }
+            else {
+                SHUT_LOGD("Invalid vec3 initial value for uniform %s\n", uniform->variable);
+            }
+        }
+        else if (strstr(uniform->initial_value, "vec2") != NULL) {
+            GLfloat vecValues[2];
+            int count = parse_floats_from_string(uniform->initial_value, vecValues, 2);
+
+            if (count == 2) {
+                gl4es_glUniform2fv(location, 1, vecValues);
+            }
+            else {
+                SHUT_LOGD("Invalid vec2 initial value for uniform %s\n", uniform->variable);
+            }
+        }
+        else if (strstr(uniform->initial_value, "float") != NULL) {
+            GLfloat value = strtof(uniform->initial_value, NULL);
+            gl4es_glUniform1f(location, value);
+        }
+        else if (strstr(uniform->initial_value, "int") != NULL) {
+            GLint value = strtol(uniform->initial_value, NULL, 10);
+            gl4es_glUniform1i(location, value);
+        }
+        else if (strstr(uniform->initial_value, "bool") != NULL) {
+            GLint value = parse_bool_from_string(uniform->initial_value);
+            if (value != -1) {
+                gl4es_glUniform1i(location, value);
+            }
+            else {
+                SHUT_LOGD("Invalid bool initial value for uniform %s\n", uniform->variable);
+            }
+        }
+        else if (strstr(uniform->initial_value, "sampler2D") != NULL) {
+            gl4es_glUniform1i(location, 0);
+        }
+        else {
+            SHUT_LOGE("[ERROR] Unsupported uniform type or invalid initial value for uniform %s\n", uniform->variable);
+        }
+    }
+}
+
+int startsWith(char* str, char* prefix) {
+    return strncmp(str, prefix, strlen(prefix)) == 0;
+}
+
+char* process_uniform_declarations(char* glslCode, uniforms_declarations uniformVector, int* uniformCount) {
+    char* cursor = glslCode;
+    char name[256], type[256], initial_value[1024];
+    int modifiedCodeIndex = 0;
+    size_t maxLength = 1024 * 10;
+    char* modifiedGlslCode = (char*)malloc(maxLength * sizeof(char));
+    if (!modifiedGlslCode) return NULL;
+
+    while (*cursor) {
+        if (strncmp(cursor, "uniform", 7) == 0) {
+            char* cursor_start = cursor;
+            
+            cursor += 7;
+
+            while (isspace((unsigned char)*cursor)) cursor++;
+
+            // may be precision qualifier
+            char* precision = NULL;
+            if (startsWith(cursor, "highp")) {
+                precision = " highp";
+                cursor += 5;
+                while (isspace((unsigned char)*cursor)) cursor++;
+            } else if (startsWith(cursor, "lowp")) {
+                precision = " lowp";
+                cursor += 4;
+                while (isspace((unsigned char)*cursor)) cursor++;
+            } else if (startsWith(cursor, "mediump")) {
+                precision = " mediump";
+                cursor += 7;
+                while (isspace((unsigned char)*cursor)) cursor++;
+            }
+
+            int i = 0;
+            while (isalnum((unsigned char)*cursor) || *cursor == '_') {
+                type[i++] = *cursor++;
+            }
+            type[i] = '\0';
+
+            while (isspace((unsigned char)*cursor)) cursor++;
+
+            // may be precision qualifier
+            if(!precision)
+            {
+                if (startsWith(cursor, "highp")) {
+                    precision = " highp";
+                    cursor += 5;
+                    while (isspace((unsigned char)*cursor)) cursor++;
+                } else if (startsWith(cursor, "lowp")) {
+                    precision = " lowp";
+                    cursor += 4;
+                    while (isspace((unsigned char)*cursor)) cursor++;
+                } else if (startsWith(cursor, "mediump")) {
+                    precision = " mediump";
+                    cursor += 7;
+                    while (isspace((unsigned char)*cursor)) cursor++;
+                } else {
+                    precision = "";
+                }
+            }
+            
+            while (isspace((unsigned char)*cursor)) cursor++;
+
+            i = 0;
+            while (isalnum((unsigned char)*cursor) || *cursor == '_') {
+                name[i++] = *cursor++;
+            }
+            name[i] = '\0';
+            while (isspace((unsigned char)*cursor)) cursor++;
+
+            initial_value[0] = '\0';
+            if (*cursor == '=') {
+                cursor++;
+                i = 0;
+                while (*cursor && *cursor != ';') {
+                    initial_value[i++] = *cursor++;
+                }
+                initial_value[i] = '\0';
+                trim(initial_value);
+            }
+
+            strcpy(uniformVector[*uniformCount].variable, name);
+            strcpy(uniformVector[*uniformCount].initial_value, initial_value);
+            (*uniformCount)++;
+
+            while (*cursor != ';' && *cursor) {
+                cursor++;
+            }
+            
+            char* cursor_end = cursor;
+
+            int spaceLeft = maxLength - modifiedCodeIndex;
+            int len = 0;
+
+            if (*initial_value) {
+                len = snprintf(modifiedGlslCode + modifiedCodeIndex, spaceLeft, "uniform%s %s %s;", precision, type, name);
+            } else {
+                // use original declaration
+                size_t length = cursor_end - cursor_start + 1;
+                if (length < spaceLeft) {
+                    memcpy(modifiedGlslCode + modifiedCodeIndex, cursor_start, length);
+                    len = (int)length;
+                } else {
+                    fprintf(stderr, "Error: Not enough space in buffer\n");
+                }
+                // len = snprintf(modifiedGlslCode + modifiedCodeIndex, spaceLeft, "uniform%s %s %s;", precision, type, name);
+            }
+
+            if (len < 0 || len >= spaceLeft) {
+                free(modifiedGlslCode);
+                return NULL;
+            }
+            modifiedCodeIndex += len;
+
+            while (*cursor == ';') cursor++;
+
+        } else {
+            modifiedGlslCode[modifiedCodeIndex++] = *cursor++;
+        }
+
+        if (modifiedCodeIndex >= maxLength - 1) {
+            maxLength *= 2;
+            modifiedGlslCode = (char*)realloc(modifiedGlslCode, maxLength);
+            if (!modifiedGlslCode) return NULL;
+        }
+    }
+
+    modifiedGlslCode[modifiedCodeIndex] = '\0';
+    return modifiedGlslCode;
+}
 
 typedef struct {
     const char* glname;
