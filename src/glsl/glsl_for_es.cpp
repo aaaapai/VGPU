@@ -324,6 +324,14 @@ std::string makeGLSLversionNewer(const std::string& glslcode) {
     result = replaceText(result, "#version 140", "#version 330");
     result = replaceText(result, "#version 150", "#version 330");
     result = replaceText(result, "#version 320", "#version 330");
+
+    if (glsl_type == GL_VERTEX_SHADER) {
+        replaceText(result, "attribute", "in");
+        replaceText(result, "varying", "out");
+    } else if (glsl_type == GL_FRAGMENT_SHADER) {
+        replaceText(result, "varying", "in");
+    }
+
 }
 
 char* GLSLtoGLSLES(char* glsl_code, GLenum glsl_type, uint essl_version) {
@@ -349,7 +357,7 @@ char* GLSLtoGLSLES(char* glsl_code, GLenum glsl_type, uint essl_version) {
     char* correct_glsl = glsl_code;
     correct_glsl = removeLineDirective(correct_glsl);
     correct_glsl = disable_GL_ARB_derivative_control(correct_glsl);
-    correct_glsl = makeGLSLversionNewer(correct_glsl);
+    correct_glsl = makeGLSLversionNewer(correct_glsl, glsl_type);
     char *shader_source = correct_glsl;
     int glsl_version = getGLSLVersion(shader_source);
     if (glsl_version == -1) {
