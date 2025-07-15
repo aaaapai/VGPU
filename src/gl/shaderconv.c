@@ -1215,11 +1215,13 @@ char * ConvertShaderVgpu(struct shader_s * shader_source){
     source = ReplaceFunctionName(source, &sourceLength, "texture2D", "texture");
     source = ReplaceFunctionName(source, &sourceLength, "texture2DLod", "textureLod");
 
+/*
     source = InplaceReplaceSimple(source, &sourceLength, "#version 100", "#version 150");
     source = InplaceReplaceSimple(source, &sourceLength, "#version 110", "#version 150");
     source = InplaceReplaceSimple(source, &sourceLength, "#version 120", "#version 150");
     source = InplaceReplaceSimple(source, &sourceLength, "#version 130", "#version 150");
     source = InplaceReplaceSimple(source, &sourceLength, "#version 140", "#version 150");
+*/
 
     //printf("REMOVING \" CHARS ");
     // " not really supported here
@@ -2080,6 +2082,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
     Tmp = InplaceReplace(Tmp, &tmpsize, "mat3x3", "mat3");
     }
 
+/*
     if(strstr(Tmp, "#version 100")) {
     // better to use #define ?
     Tmp = InplaceReplace(Tmp, &tmpsize, "#version 100", "#version 150");
@@ -2100,6 +2103,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
     // better to use #define ?
     Tmp = InplaceReplace(Tmp, &tmpsize, "#version 140", "#version 150");
     }
+*/
 
     // finish
     if((globals4es.dbgshaderconv&maskafter)==maskafter) {
