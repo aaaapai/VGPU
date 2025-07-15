@@ -23,6 +23,15 @@
 
 int NO_OPERATOR_VALUE = 9999;
 
+void trim(char* str) {
+    char* end;
+    while (isspace((unsigned char)*str)) str++;
+    if (*str == 0) return;
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+    *(end + 1) = 0;
+}
+
 // 辅助函数：解析并提取浮点数数组（用于 mat2, mat3, mat4, vec2, vec3, vec4 类型的处理）
 int parse_floats_from_string(const char* str, GLfloat* outValues, int maxCount) {
     int count = 0;
