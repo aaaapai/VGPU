@@ -52,6 +52,7 @@ int GetShaderVersion(const char * source);
 char * ReplaceFragmentOut(char * source, int *sourceLength);
 char * BackportConstArrays(char *source, int * sourceLength);
 char * ExtractString(char * source, int startString, int endString);
+char* ProcessSwitchCases(char* source, int* length);
 
 // const char* gl4es_convertARB(const char* source, GLboolean isVertex, char* erro_msg, int* error_pos); 
 #endif // _GL4ES_SHADERCONV_H_
