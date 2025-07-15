@@ -980,7 +980,7 @@ char * WrapFunction(char * source, int * sourceLength, char * functionName, char
  * @param source The shader as a string
  * @return The shader as a string, maybe in a different memory location
  */
-char * ReplaceModOperator(char * source, int * sourceLength){
+char * ReplaceModOperator(char * source, int * sourceLength) {
     char * modelString = " mod(x, y) ";
     int startIndex, endIndex = 0;
     int * startPtr = &startIndex, *endPtr = &endIndex;
@@ -1009,6 +1009,7 @@ char * ReplaceModOperator(char * source, int * sourceLength){
 
     return source;
 }
+
 
 /**
  * Change all (u)ints to floats.
