@@ -305,24 +305,12 @@ std::string replaceText(const std::string& input, const std::string& from, const
     return result;
 }
 
-std::string addPrecisionToSampler2DShadow(const std::string& glslCode) {
+const char* addPrecisionToSampler2DShadow(const char*& glslCode) {
     std::string result = glslCode;
     result = replaceText(result, " sampler2DShadow ", " highp sampler2DShadow ");
     result = replaceText(result, " mediump highp ", " mediump ");
     result = replaceText(result, " lowp highp ", " lowp ");
     result = replaceText(result, " highp highp ", " highp ");
-    return result;
-}
-
-std::string makeGLSLversionNewer(const std::string& glslCode) {
-    std::string result = glslCode;
-    result = replaceText(result, "#version 110", "#version 330");
-    result = replaceText(result, "#version 120", "#version 330");
-    result = replaceText(result, "#version 130", "#version 330");
-    result = replaceText(result, "#version 140", "#version 330");
-    result = replaceText(result, "#version 150", "#version 330");
-    result = replaceText(result, "#version 320", "#version 330");
-
     return result;
 }
 
@@ -349,19 +337,30 @@ char* GLSLtoGLSLES(char* glsl_code, GLenum glsl_type, uint essl_version) {
     char* correct_glsl = glsl_code;
     correct_glsl = removeLineDirective(correct_glsl);
     correct_glsl = disable_GL_ARB_derivative_control(correct_glsl);
-    correct_glsl = makeGLSLversionNewer(correct_glsl);
     char *shader_source = correct_glsl;
-    if (glsl_type == GL_VERTEX_SHADER) {
-        shader_source = replaceText(shader_source, "attribute", "in");
-        shader_source = replaceText(shader_source, "varying", "out");
-    } else if (glsl_type == GL_FRAGMENT_SHADER) {
-        shader_source = replaceText(shader_source, "varying", "in");
-    }
     int glsl_version = getGLSLVersion(shader_source);
     if (glsl_version == -1) {
         glsl_version = 330;
         std::string shader_str(shader_source);
         shader_str.insert(0, "#version 330\n");
+        std::strcpy(shader_source, shader_str.c_str());
+    } else if (glsl_version < 330) {
+        glsl_version = 330;
+        std::string shader_str(shader_source);
+        shader_str.insert("#version 110", "#version 330");
+        shader_str.insert("#version 120", "#version 330");
+        shader_str.insert("#version 130", "#version 330");
+        shader_str.insert("#version 140", "#version 330");
+        shader_str.insert("#version 150", "#version 330");
+        shader_str.insert("#version 320", "#version 330");
+
+        if (glsl_type == GL_VERTEX_SHADER) {
+           shader_str.insert("attribute", "in");
+           shader_str.insert("varying", "out");
+        } else if (glsl_type == GL_FRAGMENT_SHADER) {
+           shader_str.insert("varying", "in");
+        }
+    
         std::strcpy(shader_source, shader_str.c_str());
     }
     DBG(SHUT_LOGD("GLSL version: %d",glsl_version);)
