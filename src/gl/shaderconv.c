@@ -405,6 +405,111 @@ char gl_VA[MAX_VATTRIB][32] = {0};
 char gl4es_VA[MAX_VATTRIB][32] = {0};
 
 
+char * ReplacePrecisionQualifiers(char * source, int * sourceLength, int isVertex){
+
+    if(!doesShaderVersionContainsES(source)){
+        if (globals4es.vgpu_dump) {
+            printf("\nSKIPPING the replacement qualifiers step\n");
+        }
+        return source;
+    }
+
+    // Step 1 is to remove any "precision" qualifiers
+    for(unsigned long currentPosition=strstrPos(source, "precision "); currentPosition>0;currentPosition=strstrPos(source, "precision ")){
+        // Once a qualifier is found, get to the end of the instruction and replace
+        int endPosition = GetNextTokenPosition(source, currentPosition, ';', "");
+        source = InplaceReplaceByIndex(source, sourceLength, currentPosition, endPosition,"");
+    }
+
+    // Step 2 is to insert precision qualifiers, even the ones we think are defaults, since there are defaults only for some types
+
+    int insertPoint = FindPositionAfterDirectives(source);
+    source = InplaceInsertByIndex(source, sourceLength, insertPoint,
+                                   "\nprecision lowp sampler2D;\n"
+                                   "precision lowp sampler3D;\n"
+                                   "precision lowp sampler2DShadow;\n"
+                                   "precision lowp samplerCubeShadow;\n"
+                                   "precision lowp sampler2DArray;\n"
+                                   "precision lowp sampler2DArrayShadow;\n"
+                                   "precision lowp samplerCube;\n"
+                                   "#ifdef GL_EXT_texture_buffer\n"
+                                   "precision lowp samplerBuffer;\n"
+                                   "precision lowp imageBuffer;\n"
+                                   "#endif\n"
+                                   "#ifdef GL_EXT_texture_cube_map_array\n"
+                                   "precision lowp imageCubeArray;\n"
+                                   "precision lowp samplerCubeArray;\n"
+                                   "precision lowp samplerCubeArrayShadow;\n"
+                                   "#endif\n"
+                                   "#ifdef GL_OES_texture_storage_multisample_2d_array\n"
+                                   "precision lowp sampler2DMS;\n"
+                                   "precision lowp sampler2DMSArray;\n"
+                                   "#endif\n");
+
+    if(GetShaderVersion(source) > 300){
+        source = InplaceInsertByIndex(source, sourceLength,insertPoint,
+                                      "\nprecision lowp image2D;\n"
+                                      "precision lowp image2DArray;\n"
+                                      "precision lowp image3D;\n"
+                                      "precision lowp imageCube;\n");
+    }
+    int supportHighp = ((isVertex || hardext.highp) ? 1 : 0);
+    source = InplaceInsertByIndex(source, sourceLength, insertPoint, supportHighp ? "\nprecision highp float;\n" : "\nprecision medium float;\n");
+
+    if (globals4es.vgpu_precision != 0){
+        char * target_precision;
+        switch (globals4es.vgpu_precision) {
+            case 1: target_precision = "highp"; break;
+            case 2: target_precision = "mediump"; break;
+            case 3: target_precision = "lowp"; break;
+            default: target_precision = "highp";
+        }
+        source = ReplaceVariableName(source, sourceLength, "highp", target_precision);
+        source = ReplaceVariableName(source, sourceLength, "mediump", target_precision);
+        source = ReplaceVariableName(source, sourceLength, "lowp", target_precision);
+    }
+
+    return source;
+}
+
+int GetShaderVersion(const char * source){
+    // Oh yeah, I won't care much about this function
+    if(FindString(source, "#version 320 es")){return 320;}
+    if(FindString(source, "#version 310 es")){return 310;}
+    if(FindString(source, "#version 300 es")){return 300;}
+    if(FindString(source, "#version 320")){return 320;}
+    if(FindString(source, "#version 330")){return 330;}
+    if(FindString(source, "#version 400")){return 400;}
+    if(FindString(source, "#version 410")){return 410;}
+    if(FindString(source, "#version 420")){return 420;}
+    if(FindString(source, "#version 430")){return 430;}
+    if(FindString(source, "#version 440")){return 440;}
+    if(FindString(source, "#version 450")){return 450;}
+    if(FindString(source, "#version 460")){return 460;}
+    if(FindString(source, "#version 150")){return 150;}
+    if(FindString(source, "#version 130")){return 130;}
+    if(FindString(source, "#version 110")){return 110;}
+    if(FindString(source, "#version 120")){return 120;}
+    return 100;
+}
+
+int GetNextTokenPosition(const char * source, int initialPosition, const char token, const char * acceptedChars){
+    for(int i=initialPosition+1; i< strlen(source); ++i){
+        // Tripping check
+        if(strlen(acceptedChars) > 0){
+            for(int j=0; j< strlen(acceptedChars); ++j){
+                if (source[i] == acceptedChars[j]) break; // No tripping, continue
+            }
+            return initialPosition; // Tripped, meaning the token is not found
+        }
+
+        if (source[i] == token){
+            return i;
+        }
+    }
+    return initialPosition;
+}
+
 char * ExtractString(char * source, int startString, int endString){
     char * subString = malloc((endString - startString) +1);
     subString[(endString - startString) +1] = '\0';
