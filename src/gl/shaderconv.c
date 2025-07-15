@@ -2079,7 +2079,28 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
     // better to use #define ?
     Tmp = InplaceReplace(Tmp, &tmpsize, "mat3x3", "mat3");
     }
-    
+
+    if(strstr(Tmp, "#version 100")) {
+    // better to use #define ?
+    Tmp = InplaceReplace(Tmp, &tmpsize, "#version 100", "#version 150");
+    }
+   if(strstr(Tmp, "#version 110")) {
+    // better to use #define ?
+    Tmp = InplaceReplace(Tmp, &tmpsize, "#version 110", "#version 150");
+    }
+   if(strstr(Tmp, "#version 120")) {
+    // better to use #define ?
+    Tmp = InplaceReplace(Tmp, &tmpsize, "#version 120", "#version 150");
+    }
+   if(strstr(Tmp, "#version 130")) {
+    // better to use #define ?
+    Tmp = InplaceReplace(Tmp, &tmpsize, "#version 130", "#version 140");
+    }
+   if(strstr(Tmp, "#version 140")) {
+    // better to use #define ?
+    Tmp = InplaceReplace(Tmp, &tmpsize, "#version 140", "#version 150");
+    }
+
     // finish
     if((globals4es.dbgshaderconv&maskafter)==maskafter) {
     printf("New Shader source:\n%s\n", Tmp);
