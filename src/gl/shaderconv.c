@@ -402,8 +402,6 @@ static const char* gl4es_VertexAttrib = "_gl4es_VertexAttrib_";
 char gl_VA[MAX_VATTRIB][32] = {0};
 char gl4es_VA[MAX_VATTRIB][32] = {0};
 
-char* process_uniform_declarations(char* glslCode, uniforms_declarations uniformVector, int* uniformCount);
-
 char * ConvertShaderConditionally(struct shader_s * shader_source){
     int shaderCompileStatus;
 
@@ -425,6 +423,103 @@ char * ConvertShaderConditionally(struct shader_s * shader_source){
     }
 
     return shader_source->converted;
+}
+
+/** Convert the shader through multiple steps
+ * @param source The start of the shader as a string*/
+char * ConvertShaderVgpu(struct shader_s * shader_source){
+
+    if (globals4es.vgpu_dump){
+        printf("New VGPU Shader source:\n%s\n", shader_source->converted);
+    }
+
+    // Get the shader source
+    char * source = shader_source->converted;
+    int sourceLength = strlen(source) + 1;
+
+        // Else, skip the conversion
+        if (globals4es.vgpu_dump){
+            printf("SKIPPING OLD SHADER CONVERSION \n");
+        }
+        return source;
+    }
+
+
+    // Remove 'const' storage qualifier
+    //printf("REMOVING CONST qualifiers");
+    //source = RemoveConstInsideBlocks(source, &sourceLength);
+    //source = ReplaceVariableName(source, &sourceLength, "const", " ");
+
+
+
+
+    // Avoid keyword clash with gl4es #define blocks
+    //printf("REPLACING KEYWORDS");
+    source = InplaceReplaceSimple(source, &sourceLength, "#define texture2D texture\n", "");
+    source = ReplaceVariableName(source, &sourceLength, "sample", "vgpu_Sample");
+    source = ReplaceVariableName(source, &sourceLength, "texture", "vgpu_texture");
+
+    source = ReplaceFunctionName(source, &sourceLength, "texture2D", "texture");
+    source = ReplaceFunctionName(source, &sourceLength, "texture2DLod", "textureLod");
+
+    source = InplaceReplaceSimple(source, &sourceLength, "#version 100", "#version 150");
+    source = InplaceReplaceSimple(source, &sourceLength, "#version 110", "#version 150");
+    source = InplaceReplaceSimple(source, &sourceLength, "#version 120", "#version 150");
+    source = InplaceReplaceSimple(source, &sourceLength, "#version 130", "#version 150");
+    source = InplaceReplaceSimple(source, &sourceLength, "#version 140", "#version 150");
+
+    //printf("REMOVING \" CHARS ");
+    // " not really supported here
+    source = InplaceReplaceSimple(source, &sourceLength, "\"", "");
+
+    // For now let's hope no extensions are used
+    // TODO deal with extensions but properly
+    //printf("REMOVING EXTENSIONS");
+    //source = RemoveUnsupportedExtensions(source);
+
+    // OpenGL natively supports non const global initializers, not OPENGL ES except if we add an extension
+    //printf("ADDING EXTENSIONS\n");
+    source = InsertExtensions(source, &sourceLength);
+
+    //printf("REPLACING mod OPERATORS");
+    // No support for % operator, so we replace it
+    source = ReplaceModOperator(source, &sourceLength);
+
+    //printf("COERCING INT TO FLOATS");
+    // Hey we don't want to deal with implicit type stuff
+    source = CoerceIntToFloat(source, &sourceLength);
+
+    //printf("FIXING ARRAY ACCESS");
+    // Avoid any weird type trying to be an index for an array
+    source = ForceIntegerArrayAccess(source, &sourceLength);
+
+    //printf("WRAPPING FUNCTION");
+    // Since everything is a float, we need to overload WAY TOO MANY functions
+    source = WrapIvecFunctions(source, &sourceLength);
+
+    if (shader_source->type == GL_VERTEX_SHADER){
+        source = ReplaceVariableName(source, &sourceLength, "attribute", "in");
+        source = ReplaceVariableName(source, &sourceLength, "varying", "out");
+    }else{
+        source = ReplaceVariableName(source, &sourceLength, "varying", "in");
+    }
+
+    // Draw buffers aren't dealt the same on OPEN GL|ES
+    if(shader_source->type == GL_FRAGMENT_SHADER && doesShaderVersionContainsES(source) ){
+        //printf("REPLACING FRAG DATA");
+        source = ReplaceGLFragData(source, &sourceLength);
+        //printf("REPLACING FRAG COLOR");
+        source = ReplaceGLFragColor(source, &sourceLength);
+    }
+
+    //printf("FUCKING UP PRECISION");
+    source = ReplacePrecisionQualifiers(source, &sourceLength, shader_source->type == GL_VERTEX_SHADER);
+
+    if (globals4es.vgpu_dump){
+        printf("New VGPU Shader conversion:\n%s\n", source);
+    }
+
+    return source;
 }
 
 char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, int forwardPort)
