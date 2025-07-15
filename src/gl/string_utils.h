@@ -7,6 +7,8 @@ const char* FindString(const char* pBuffer, const char* S);
 char* FindStringNC(char* pBuffer, const char* S);
 int CountString(const char* pBuffer, const char* S);
 char* ResizeIfNeeded(char* pBuffer, int *size, int addsize);
+char * InplaceReplaceByIndex(char* pBuffer, int* size, int startIndex, int endIndex, const char* replacement);
+char * InplaceInsertByIndex(char * source, int *sourceLength, int insertPoint, const char *insertedString);
 char* InplaceReplace(char* pBuffer, int* size, const char* S, const char* D);
 char* Append(char* pBuffer, int* size, const char* S);
 char* InplaceInsert(char* pBuffer, const char* S, char* master, int* size);
