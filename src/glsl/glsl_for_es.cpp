@@ -348,6 +348,14 @@ char* GLSLtoGLSLES(char* glsl_code, GLenum glsl_type, uint essl_version) {
         glsl_version = 330;
         std::string shader_str(shader_source);
 
+        
+        shader_str = replaceText(shader_str, "#version 110", "#version 330");
+        shader_str = replaceText(shader_str, "#version 120", "#version 330");
+        shader_str = replaceText(shader_str, "#version 130", "#version 330");
+        shader_str = replaceText(shader_str, "#version 140", "#version 330");
+        shader_str = replaceText(shader_str, "#version 150", "#version 330");
+        shader_str = replaceText(shader_str, "#version 320", "#version 330");
+
         if (glsl_type == GL_VERTEX_SHADER) {
             shader_str = replaceText(shader_str, "attribute", "in");
             shader_str = replaceText(shader_str, "varying", "out");
