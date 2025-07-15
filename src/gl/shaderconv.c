@@ -1166,7 +1166,7 @@ char * ConvertShaderConditionally(struct shader_s * shader_source){
     int shaderCompileStatus;
 
     // First, vanilla gl4es, no forward port
-    shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need, 0);
+    shader_source->converted = ConvertShader(shader_source->source, shader_source->type == GL_VERTEX_SHADER ? 1 : 0,&shader_source->need);
     shaderCompileStatus = testGenericShader(shader_source);
 
     // Then, attempt back porting if desired of constrained to do so
