@@ -1752,9 +1752,10 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
         Tmp = InplaceInsert(GetLine(Tmp, headline), HackAltClamp, Tmp, &tmpsize);
     }
     if(strstr(Tmp, "mod(") || strstr(Tmp, "mod (")) {
-        Tmp = InplaceInsert(GetLine(Tmp, headline), HackAltMod, Tmp, &tmpsize);
+        //Tmp = InplaceInsert(GetLine(Tmp, headline), HackAltMod, Tmp, &tmpsize);
     }
   }
+/*
   if(!isVertex && hardext.shaderlod &&
     (FindString(Tmp, "texture2DLod") || FindString(Tmp, "texture2DProjLod")
   || FindString(Tmp, "textureCubeLod")
@@ -1812,13 +1813,16 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
         Tmp = InplaceReplace(Tmp, &tmpsize, "textureCubeGradARB", "_gl4es_textureCubeGrad");
         Tmp = InplaceInsert(GetLine(Tmp, headline), textureCubeGradAlt, Tmp, &tmpsize);
       }
-  }
+  }*/
     // now check to remove trailling "f" after float, as it's not supported too
   newptr = Tmp;
   // simple state machine...
+/*
   int state = 0;
   while (*newptr!=0x00) {
+*/
     switch(state) {
+/*
       case 0:
         if ((*newptr >= '0') && (*newptr <= '9'))
           state = 1;  // integer part
@@ -1860,7 +1864,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
           state = 0; // separator
         else
           state = 3;
-          break;
+          break;*/
     }
     newptr++;
   }
