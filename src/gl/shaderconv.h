@@ -9,7 +9,8 @@ void set_uniforms_default_value(GLuint program, uniforms_declarations uniformVec
 char* ConvertShaderVgpu(struct shader_s* shader_source);
 
 char * ConvertShaderConditionally(struct shader_s * shader_source);
-char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need, int forwardPort);
+char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need);
+//char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need, int forwardPort);
 
 int isBuiltinAttrib(const char* name);
 int isBuiltinMatrix(const char* name);
