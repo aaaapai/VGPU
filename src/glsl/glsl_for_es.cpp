@@ -1,5 +1,3 @@
-
-
 #include "glsl_for_es.h"
 
 #include <glslang/Public/ShaderLang.h>
@@ -316,7 +314,7 @@ std::string addPrecisionToSampler2DShadow(const std::string& glslCode) {
     return result;
 }
 
-std::string makeGLSLversionNewer(const std::string& glslcode) {
+std::string makeGLSLversionNewer(const std::string& glslCode, const GLenum& glsl_type) {
     std::string result = glslCode;
     result = replaceText(result, "#version 110", "#version 330");
     result = replaceText(result, "#version 120", "#version 330");
