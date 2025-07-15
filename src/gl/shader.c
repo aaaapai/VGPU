@@ -240,7 +240,6 @@ void gl4es_glShaderSource(GLuint shader, GLsizei count, const GLchar * const *st
         else
             glshader->converted = ConvertShader(glshader->source, glshader->type==GL_VERTEX_SHADER?1:0, &glshader->need);
             DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted))
-	}
             
         // ======== add marker
         add_marker(&glshader->converted);
