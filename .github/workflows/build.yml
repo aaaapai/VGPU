@@ -1,0 +1,18 @@
+name: Build vgpu
+on: [workflow_dispatch]
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build VGPU
+        run: |
+         #wget https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+         #unzip android-ndk-r25c-linux.zip >> /dev/null
+         $ANDROID_NDK_LATEST_HOME/ndk-build -j4 APP_PLATFORM=android-29 APP_ABI=arm64-v8a APP_BUILD_SCRIPT=./Android.mk NDK_PROJECT_PATH=.
+         $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip libs/arm64-v8a/libvgpu.so
+      - name: Upload VGPU libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: vgpu
+          path: obj/local/
