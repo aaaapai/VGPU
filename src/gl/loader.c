@@ -106,7 +106,7 @@ void *open_lib(const char **names, const char *override) {
     void *lib = NULL;
 
     char path_name[PATH_MAX + 1];
-    int flags = RTLD_LOCAL | RTLD_NOW;
+    int flags = RTLD_LOCAL | RTLD_LAZY;
 #if defined(RTLD_DEEPBIND) && !defined(PYRA)
     // note: breaks address sanitizer
     flags |= RTLD_DEEPBIND;
@@ -155,6 +155,7 @@ void load_libs() {
     egl = gles;
 #else
     const char *egl_override = GetEnvVar("LIBGL_EGL");
+    if (egl_override == NULL)
     egl_override = LIB_EGL_NAME;
     egl = open_lib(egl_lib, egl_override);
 #endif
