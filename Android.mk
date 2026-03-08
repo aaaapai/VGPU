@@ -94,13 +94,14 @@ LOCAL_SRC_FILES := \
 	src/gl/matvec.c \
 		
 
-LOCAL_CFLAGS += -g -O3 -include include/android_debug.h
+LOCAL_CFLAGS += -g -O3 -mllvm -polly -flto -include include/android_debug.h
 #LOCAL_CFLAGS += -funwind-tables -fvisibility=hidden
 LOCAL_CFLAGS += -DNOX11
 LOCAL_CFLAGS += -DNO_GBM
 #LOCAL_CFLAGS += -DNO_INIT_CONSTRUCTOR
 LOCAL_CFLAGS += -DDEFAULT_ES=3
 
+LOCAL_LDFLAGS += -flto
 LOCAL_LDLIBS := -ldl -llog
 #building as a shared lib
 
